@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>myLog</title>
+    <script src="../assert/js/vue.js"></script>
+    <link rel="stylesheet" href="../assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../assert/css/common.css">
+    <link rel="stylesheet" href="../assert/common/upload.css">
+    <script src="../assert/element-ui/lib/index.js"></script>
+    <script src="../assert/js/axios.js"></script>
+    <script src="../assert/js/order.js"></script>
+</head>
+<body>
+<div id="logRoot">
+    <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+        <div style="margin: 20px;width: 100px;height: 20px">
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>理财计划
+        </div>
+    </div>
+    <el-col :span="2" style="height: 10px">
+
+    </el-col>
+    <el-col :span="3">
+        <el-input v-model="searchName" placeholder="请输入计划名称"></el-input>
+    </el-col>
+    <el-col :span="2">
+        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>
+    </el-col>
+    <el-col :span="4">
+        <el-button @click="handleDelete('批量', null)" type="danger">批量删除</el-button>
+    </el-col>
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                @selection-change="handleSelectionChange"
+                ref="selectionTable"
+        >
+            <el-table-column
+                    type="selection"
+                    width="80">
+            </el-table-column>
+            <el-table-column
+                    type="index"
+                    width="80"
+                    label="序号">
+            </el-table-column>
+            <el-table-column
+                    label="创建日期"
+                    width="180">
+                <template slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.saveTime }}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    label="截止日期"
+                    width="180">
+                <template slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{scope.row.endTime}}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+
+            <el-table-column
+                    prop="planName"
+                    label="计划名称"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="detail"
+                    label="明细"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    label="金额"
+                    width="180"
+                    prop="planMoney"
+            >
+            </el-table-column>
+            <el-table-column
+                    label="操作"
+                    width="180"
+                    >
+                <template slot-scope="scope">
+                    <el-button @click="handleEdit(scope.row.id)" type="text" size="small">编辑</el-button>
+                    <el-button @click="handleDelete('单删',scope.row.id)" type="text" size="small">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-row>
+            <el-col :span="8" style="height: 32px">
+            </el-col>
+            <el-col :span="8">
+                <el-pagination
+                        class="pageList"
+                        :page-sizes="[5, 10, 20, 40]"
+                        :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="counts"
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                ></el-pagination>
+            </el-col>
+            <el-col :span="8" style="height: 32px">
+
+            </el-col>
+
+        </el-row>
+
+    </template>
+</div>
+
+
+<script>
+    new Vue ({
+        el:"#logRoot",
+        data() {
+            return {
+                tableData: [],
+                searchName:'',
+
+                input: '', // 输入跳转到哪一页
+                counts: 0, // 总共多少数据
+                page: 1,// 当前是多少页
+                pageSize: 5, // 每页多少数据，
+                checkList:'', // 多选
+
+            }
+        },
+        methods:{
+            initPage(){
+                var _this = this;
+                axios.get("/plan/page?page="+this.page+"&pageSize="+this.pageSize+"&searchName="+this.searchName+"&id="+sessionStorage.getItem('user')).then(function (resp) {
+                    if(resp.data.code === 10001){
+                        _this.tableData = resp.data.data.records;
+                        _this.counts = resp.data.data.total;
+                    }else{
+                        _this.$message.error(resp.data.msg || '接口错误');
+                    }
+                })
+            },
+            handleEdit(id){
+                window.location.href='editPlan.html?id='+id;
+            },
+            handleDelete(type,id) {
+                if (type === '批量' && id === null) {
+                    if (this.checkList.length === 0) {
+                        return this.$message.error('请选择删除对象')
+                    }
+                }
+                this.$confirm('确认删除该记录, 是否继续?', '确定删除', {
+                    'confirmButtonText': '确定',
+                    'cancelButtonText': '取消',
+                }).then(() => {
+                    axios.delete("/plan?ids="+ (type ==='批量' ? this.checkList.join(",") : id)).then(res => {
+                        if (res.data.code === 50001) {
+                            this.$message.success('删除成功！')
+                            this.initPage();
+                        } else {
+                            this.$message.error( '操作失败')
+                        }
+                    }).catch(err => {
+                        this.$message.error('请求出错了：' + err)
+                    })
+                })
+            },
+
+            handleSizeChange (val) {
+                this.pageSize = val
+                this.initPage()
+            },
+            handleCurrentChange (val) {
+                this.page = val
+                this.initPage()
+            },
+
+
+            handleSelectionChange(val) {
+                let checkArr = []
+                val.forEach((n) => {
+                    checkArr.push(n.id)
+                })
+                this.checkList = checkArr
+            },
+
+        },
+        created(){
+            this.initPage();
+        }
+    })
+</script>
+
+</body>
+</html>

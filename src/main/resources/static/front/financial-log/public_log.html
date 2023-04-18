@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>myLog</title>
+    <script src="../assert/js/vue.js"></script>
+    <link rel="stylesheet" href="../assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../assert/css/common.css">
+    <link rel="stylesheet" href="../common/upload.css">
+    <script src="../assert/element-ui/lib/index.js"></script>
+    <script src="../assert/js/axios.js"></script>
+    <script src="../assert/js/order.js"></script>
+</head>
+<body>
+<div id="logRoot">
+    <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+        <div style="margin: 20px;width: 100px;height: 20px">
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>公开日志
+        </div>
+    </div>
+    <el-col :span="4">
+        <el-input v-model="searchName" placeholder="请输入名称"></el-input>
+    </el-col>
+    <el-col :span="8">
+        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>
+    </el-col>
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+            <el-table-column
+                    label="创建日期"
+                    width="180">
+                <template slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.saveTime.join('-') }}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    label="更新日期"
+                    width="180">
+                <template slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.updateTime != null ? scope.row.updateTime.join('-') : scope.row.saveTime.join('-')  }}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    prop="userName"
+                    label="发布者"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="title"
+                    label="标题"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="logText"
+                    label="正文"
+                    width="800">
+            </el-table-column>
+
+            <el-table-column
+                    label="隐私性"
+                    width="100">
+                <template slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.visible ? '公开' : '私有' }}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+
+<!--            <el-table-column-->
+<!--                    label="操作"-->
+<!--                    width="100"-->
+<!--                    fixed="right">-->
+<!--                <template slot-scope="scope">-->
+<!--                    <el-button @click="handleEdit(scope.row.id)" type="text" size="small">查看</el-button>-->
+<!--&lt;!&ndash;                    <el-button @click="handleDelete(scope.row.id)" type="text" size="small">删除</el-button>&ndash;&gt;-->
+<!--                </template>-->
+<!--            </el-table-column>-->
+        </el-table>
+        <el-row>
+            <el-col :span="8" style="height: 32px">
+
+            </el-col>
+            <el-col :span="8">
+                <el-pagination
+                        class="pageList"
+                        :page-sizes="[5, 10, 20, 40]"
+                        :page-size="pageSize"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        :total="counts"
+                        @size-change="handleSizeChange"
+                        @current-change="handleCurrentChange"
+                ></el-pagination>
+            </el-col>
+            <el-col :span="8" style="height: 32px">
+
+            </el-col>
+
+        </el-row>
+
+    </template>
+</div>
+
+
+<script>
+    new Vue ({
+        el:"#logRoot",
+        data() {
+            return {
+                tableData: [],
+                searchName:'',
+
+
+                input: '', // 输入跳转到哪一页
+                counts: 0, // 总共多少数据
+                page: 1,// 当前是多少页
+                pageSize: 5, // 每页多少数据，
+
+            }
+        },
+        methods:{
+            initPage(){
+                var _this = this;
+                axios.get("/financial/pageSelf?page="+this.page+"&pageSize="+this.pageSize+"&searchName="+this.searchName+"&id=").then(function (resp) {
+                    if(resp.data.code === 10001){
+                        _this.tableData = resp.data.data.records;
+                        _this.counts = resp.data.data.total;
+                    }else{
+                        _this.$message.error(resp.data.msg || '接口错误');
+                    }
+                })
+            },
+            handleEdit(id){
+                window.location.href='editLog.html?id='+id;
+            },
+            handleDelete(id){
+                var _this = this;
+                this.$confirm('确认删除该日志, 是否继续?', '确定删除', {
+                    'confirmButtonText': '确定',
+                    'cancelButtonText': '取消',
+                }).then(() => {
+                    axios.delete("/financial?id="+id).then(function (resp){
+                        if(resp.data.code === 50001){
+                            _this.$message.success(resp.data.msg || '删除成功');
+                            _this.initPage();
+                        }else{
+                            _this.$message.error(resp.data.msg || '删除失败');
+                        }
+                    })
+                })
+            },
+
+            handleSizeChange (val) {
+                this.pageSize = val
+                this.initPage()
+            },
+            handleCurrentChange (val) {
+                this.page = val
+                this.initPage()
+            },
+        },
+        created(){
+            this.initPage();
+        }
+    })
+</script>
+
+</body>
+</html>

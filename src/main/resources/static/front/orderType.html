@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="assert/js/vue.js"></script>
+  <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="./assert/css/common.css">
+  <link rel="stylesheet" href="./assert/css/index.css">
+  <script src="./assert/element-ui/lib/index.js"></script>
+  <script src="assert/js/axios.js"></script>
+  <script src="assert/js/orderDetail.js"></script>
+</head>
+<body>
+<div id = "orderType">
+  <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+    <div style="margin: 20px;width: 100px;height: 20px">
+      <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>收支类型
+    </div>
+  </div>
+  <template>
+
+
+    <el-row>
+      <el-col :span="2"><el-button type="primary" icon="el-icon-plus" @click="openAddForm()">添加</el-button>
+      </el-col>
+      <el-col :span="2">
+        <el-button type="warning"  @click = "handleDelete('批量',null)">批量删除</el-button>
+      </el-col>
+      <el-col :span="4">
+        <el-radio-group v-model="searchType" @input="initPage()"  >
+          <el-radio :label="0"  >支出</el-radio>
+          <el-radio :label="1"  >收入</el-radio>
+          <el-radio :label="2"  >全部</el-radio>
+        </el-radio-group>
+      </el-col>
+
+      <el-col :span="4">
+        <el-input v-model="searchName" placeholder="请输入名称"></el-input>
+      </el-col>
+      <el-col :span="8">
+        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>
+      </el-col>
+
+    </el-row>
+
+    <el-table
+            :data="tableData"
+            style="width: 100%"
+            @selection-change="handleSelectionChange"
+    >
+      <el-table-column
+              type="selection"
+              width="55">
+      </el-table-column>
+      <el-table-column
+              label="添加日期"
+              width="300">
+        <template slot-scope="scope">
+          <i class="el-icon-time"></i>
+          <span style="margin-left: 10px">{{ dateFormate(scope.row.saveTime) }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+              label="类型名称"
+              width="400">
+        <template slot-scope="scope">
+          <i class="el-icon-time"></i>
+          <span style="margin-left: 10px">{{ scope.row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column
+              label="收入/支出"
+              width="400">
+        <template slot-scope="scope">
+          <div slot="reference" class="name-wrapper">
+            <el-tag size="medium">{{ scope.row.type == 1 ? '收入' : '支出' }}</el-tag>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="300">
+        <template slot-scope="scope">
+          <el-button
+                  size="mini"
+                  @click="handleEdit(scope.row.id)">编辑</el-button>
+          <el-button
+                  size="mini"
+                  type="danger"
+                  @click="handleDelete('单删',scope.row.id)">删除</el-button>
+        </template>
+      </el-table-column>
+    </el-table>
+  </template>
+  <el-pagination
+          class="pageList"
+          :page-sizes="[5, 10, 20, 40]"
+          :page-size="pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="counts"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+  ></el-pagination>
+
+  <el-dialog title="收支类型" :visible.sync="dialogFormVisible">
+    <el-form :model="form" :rules="rules" ref="form">
+      <el-form-item label="类型名称" :label-width="formLabelWidth" prop="name">
+        <el-input v-model="form.name" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="请选择类型" :label-width="formLabelWidth" prop="type">
+        <template>
+          <el-radio-group v-model="form.type" >
+            <el-radio :label="1">收入</el-radio>
+            <el-radio :label="0">支出</el-radio>
+          </el-radio-group>
+        </template>
+      </el-form-item>
+    </el-form>
+    <div slot="footer" class="dialog-footer">
+      <el-button @click="dialogFormVisible = false">取 消</el-button>
+      <el-button type="primary" @click="confirmAddorUpdate('form')">确 定</el-button>
+    </div>
+  </el-dialog>
+</div>
+
+<script>
+  new Vue( {
+    el: "#orderType",
+    data() {
+      return {
+        tableData: [],
+        type:'',
+        checkList:[],
+
+        searchName : '',
+
+        searchType: 2,
+        //add or update form
+        form:{},
+
+        dialogFormVisible:false,
+
+        formLabelWidth:'200px',
+
+        //page
+        input: '', // 输入跳转到哪一页
+        counts: 0, // 总共多少数据
+        page: 1,// 当前是多少页
+        pageSize: 5, // 每页多少数据，
+        total:'',
+        rules: {
+          name:[{required:true,message:'请输入类型名称',trigger:'blur'}],
+          type:[
+            {required: true,message: '请选择类型',trigger: 'blur'}
+          ]
+        }
+      }
+    },
+    methods: {
+
+      handleEdit(id) {
+        this.dialogFormVisible = true;
+        for(let i in this.form){
+          this.form[i] = "";
+        }
+        var _this = this;
+        axios.get("/orderType/getById?id=" + id).then(function (resp) {
+          if (resp.data.code === 10001) {
+            _this.form = resp.data.data;
+          }else {
+            _this.$message.error(resp.data.msg);
+          }
+
+        })
+      },
+      handleDelete(type,id) {
+        if (type === '批量' && id === null) {
+          if (this.checkList.length === 0) {
+            return this.$message.error('请选择删除对象')
+          }
+        }
+        this.$confirm('确认删除该类型, 是否继续?', '确定删除', {
+          'confirmButtonText': '确定',
+          'cancelButtonText': '取消',
+        }).then(() => {
+          deleteOrderType(type === '批量' ? this.checkList.join(',') : id).then(res => {
+            if (res.data.code === 50001) {
+              this.$message.success('删除成功！')
+              this.initPage(1);
+            } else {
+              this.$message.error( '操作失败')
+            }
+          }).catch(err => {
+            this.$message.error('请求出错了：' + err)
+          })
+        })
+
+      },
+      handleSelectionChange(val) {
+        let checkArr = []
+        val.forEach((n) => {
+          console.log(n.id)
+          checkArr.push(n.id)
+        })
+        this.checkList = checkArr
+      },
+
+
+      //page
+      initPage(){
+        var _this = this;
+        axios.get("/orderType/page?name="+this.searchName + "&searchType=" + this.searchType + "&page="+this.page + "&pageSize="+this.pageSize).then(function (resp) {
+          if (resp.data.code !==10001){
+            _this.$message.error(resp.data.msg);
+            _this.counts = resp.data.data.total;
+          }else {
+            _this.tableData = resp.data.data.records;
+            _this.counts = resp.data.data.total;
+          }
+        })
+      },
+
+      handleSizeChange (val) {
+        this.pageSize = val
+        this.initPage(1)
+      },
+      handleCurrentChange (val) {
+        this.page = val
+        this.initPage(1)
+      },
+      // add form
+      openAddForm(){
+        for(let i in this.form){
+          this.form[i] = "";
+        }
+        this.dialogFormVisible = true
+      },
+      confirmAddorUpdate(formName){
+        var _this = this;
+        this.$refs[formName].validate((valid) => {
+          if (valid) {
+            axios.put("/orderType?userId=" + sessionStorage.getItem('user'),this.form).then(function (resp) {
+              if (resp.data.code === 50001) {
+                _this.$message.success(resp.data.msg);
+                _this.initPage();
+                _this.dialogFormVisible = false;
+              }else {
+                _this.$message.error(resp.data.msg);
+              }
+            })
+          } else {
+            this.$message.error('请检查');
+            return false;
+          }
+        });
+
+      },
+
+      // dateformate
+      dateFormate(value) {
+        let date = new Date(value);
+        let y = date.getFullYear();
+        let MM = date.getMonth() + 1;
+        MM = MM < 10 ? ('0' + MM) : MM;
+        let d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        let h = date.getHours();
+        h = h < 10 ? ('0' + h) : h;
+        let m = date.getMinutes();
+        m = m < 10 ? ('0' + m) : m;
+        let s = date.getSeconds();
+        s = s < 10 ? ('0' + s) : s;
+        return y + '-' + MM + '-' + d ;
+      }
+    },
+    mounted(){
+      this.initPage();
+    }
+  })
+</script>
+</body>
+</html>

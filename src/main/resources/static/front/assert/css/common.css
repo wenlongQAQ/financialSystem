@@ -1,0 +1,61 @@
+html,body{
+    height: 100%;
+    width: 100%;
+    position: absolute;
+}
+.el-header
+{
+    padding: 0;
+    background-color: #28384f;
+    color: #c6e2ff;
+    line-height: 60px;
+}
+.el-footer {
+    background-color: #28384f;
+    color: #333;
+    text-align: center;
+    line-height: 60px;
+
+}
+
+.el-aside {
+    /*background-color: #303133;*/
+    color: #333;
+    background-color: #28384f;
+    text-align: left;
+    height: 100%;
+    position: relative;
+    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+
+}
+
+.el-main {
+    background-color: #E9EEF3;
+    color: #333;
+    text-align: center;
+    /*line-height: 160px;*/
+    /*height: */
+    padding: 0;
+}
+html,body,#app,.el-container{
+    /*设置内部填充为0，几个布局元素之间没有间距*/
+    padding: 0;
+    /*外部间距也是如此设置*/
+    margin: 0;
+    /*统一设置高度为100%*/
+    height: 100%;
+}
+
+body > .el-container {
+    margin-bottom: 40px;
+
+}
+
+.el-container:nth-child(5) .el-aside,
+.el-container:nth-child(6) .el-aside {
+    line-height: 260px;
+}
+
+.el-container:nth-child(7) .el-aside {
+    line-height: 320px;
+}

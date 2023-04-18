@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script src="../assert/js/vue.js"></script>
+  <link rel="stylesheet" href="../assert/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="../assert/css/common.css">
+  <link rel="stylesheet" href="../assert/common/upload.css">
+  <script src="../assert/element-ui/lib/index.js"></script>
+  <script src="../assert/js/axios.js"></script>
+  <script src="../assert/js/order.js"></script>
+</head>
+<body style="background-color: white">
+<div id="root">
+  <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+    <div style="margin: 20px;width: 100px;height: 20px">
+      <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>新增消费
+    </div>
+  </div>
+
+  <el-form :model="form" ref="form" :rules="rules"  >
+    <el-row>
+      <el-col :span="8">
+        <el-form-item label="订单名称" :label-width="formLabelWidth" prop="nameRequired">
+          <el-input v-model="form.orderName" autocomplete="off" ></el-input>
+        </el-form-item>
+      </el-col>
+    </el-row>
+
+
+    <el-form-item label="日期" :label-width="formLabelWidth" prop="dateRequired">
+      <el-date-picker
+              v-model="form.orderTime"
+              type="date"
+              placeholder="选择账单日期">
+      </el-date-picker>
+    </el-form-item>
+    <!--      <el-form-item label="账单来源" :label-width="formLabelWidth">-->
+    <!--        <el-input v-model="form.orderClient" autocomplete="off"></el-input>-->
+    <!--      </el-form-item>-->
+    <el-row>
+      <el-col :span="8">
+        <el-form-item label="备注" :label-width="formLabelWidth">
+          <el-input v-model="form.comment" autocomplete="off" type="textarea"></el-input>
+        </el-form-item>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col :span = "4">
+        <el-form-item label="金额" :label-width="formLabelWidth" prop="orderMoney">
+          <el-input v-model.numer="form.orderMoney" autocomplete="off"></el-input>
+        </el-form-item>
+      </el-col>
+    </el-row>
+
+    <el-form-item label="请选择消费类型" prop="dataRequired">
+      <template>
+        <el-select v-model="form.orderTypeId" filterable placeholder="请选择" >
+          <el-option
+                  v-for="item in orderType"
+                  :label="item.name"
+                  :value="item.id">
+          </el-option>
+        </el-select>
+      </template>
+    </el-form-item>
+    <el-form-item label="消费详情" :label-width="formLabelWidth">
+      <el-upload
+              class="avatar-uploader"
+              action="/common/uploadImg"
+              :show-file-list="false"
+              :on-success="handleAvatarSuccess"
+              :before-upload="beforeAvatarUpload"
+              ref="uploadImg"
+      >
+        <img v-if="imageUrl" :src="imageUrl" class="avatar">
+        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+      </el-upload>
+    </el-form-item>
+  </el-form>
+  <div slot="footer" class="dialog-footer">
+    <el-button @click="clearDialog()">清空</el-button>
+    <el-button type="primary" @click="confirmAdd('form')">确 定</el-button>
+  </div>
+
+</div>
+</body>
+<script>
+  const x = new Vue({
+    el: '#root',
+    data(){
+      var checkNum = (rule, value, callback) => {
+        var numReg=/^[0-9]*$/;
+        if (!numReg.test(value)) {
+          callback(new Error('请输入数字值'));
+        }else {
+          callback();
+        }
+
+      };
+      var checkname = (rule, value, callback) => {
+        if(this.form.orderName === undefined) {
+          callback(new Error('不能为空'))
+        }
+        console.log(value)
+        callback();
+      };
+      var checkDate = (rule, value, callback) => {
+        if(this.form.orderTime === undefined) {
+          callback(new Error('不能为空'));
+        }
+        console.log(value)
+        callback();
+      };
+      return{
+        type:0,
+        formLabelWidth:'120px',
+        imageUrl:'',
+        form:{},
+        orderType:[],
+        rules: {
+          orderNum:[
+            {required:true , trigger:'blur',message:'不能为空'},
+            {validator: checkNum,trigger:'blur'}
+          ],
+          orderMoney: [
+            {required:true , trigger:'blur',message:'不能为空'},
+            {validator: checkNum,trigger:'blur'}
+          ],
+          nameRequired:[
+            {validator: checkname,trigger:'blur'}
+          ],
+          dateRequired:[
+            {validator: checkDate,trigger:'blur'}
+          ]
+        },
+      }
+    },
+    methods:{
+      confirmAdd(formName){
+        this.$refs[formName].validate((valid) => {
+          var _this = this;
+          this.form.type = this.type;
+          if (valid) {
+            axios.put("/order",this.form).then(function (resp) {
+              if (resp.data.code === 50001) {
+                _this.$message.success(resp.data.msg)
+                _this.dialogFormVisible = false;
+                _this.initPage();
+              }else {
+                _this.$message.error(resp.data.msg||'接口错误')
+              }
+            })
+          } else {
+            return false;
+          }
+        });
+      },
+      clearDialog(){
+        this.form = {};
+        this.imageUrl = '';
+      },
+      getOrderType(){
+        var _this = this;
+        axios.get("/orderType?type=" + this.type).then(function (resp) {
+          _this.orderType = resp.data.data;
+        })
+      },
+
+
+
+      handleAvatarSuccess (response, file, fileList) {
+        this.form.orderImage = response.data;
+        this.imageUrl = '/common/download?name='+response.data
+      },
+      beforeAvatarUpload(file) {
+        const isJPG = file.type === 'image/jpeg';
+        const isLt2M = file.size / 1024 / 1024 < 2;
+
+        if (!isJPG) {
+          this.$message.error('上传头像图片只能是 JPG 格式!');
+        }
+        if (!isLt2M) {
+          this.$message.error('上传头像图片大小不能超过 2MB!');
+        }
+        return isJPG && isLt2M;
+      },
+
+    },
+    created(){
+    },
+    mounted(){
+      this.getOrderType();
+    }
+
+  })
+</script>
+</html>

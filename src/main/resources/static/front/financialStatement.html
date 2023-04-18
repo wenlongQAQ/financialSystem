@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="assert/js/vue.js"></script>
+    <link rel="stylesheet" href="./assert/css/common.css">
+    <!--    <link rel="stylesheet" href="./element-ui/lib/theme-chalk/index.css">-->
+    <!--    <script src="./element-ui/lib/index.js"></script>-->
+
+    <link rel="stylesheet" href="https://unpkg.zhimg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.zhimg.com/element-ui/lib/index.js"></script>
+
+    <script src="assert/js/axios.js"></script>
+    <script src="assert/js/echarts.min.js"></script>
+</head>
+<style>
+    .erChart{
+        width: 500px;
+        height: 400px;
+        margin-top: 100px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .erChartBack{
+        background-color: black;
+    }
+    .like {
+        cursor: pointer;
+        font-size: 25px;
+        display: inline-block;
+    }
+
+</style>
+<body style="height: 100%;width: 100%" >
+
+<div id="root" style="width: auto;height: auto">
+
+
+
+    <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+        <div style="margin: 20px;width: 100px;height: 20px">
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>年度报表
+        </div>
+    </div>
+    <el-date-picker
+            v-model="searchMonth"
+            type="daterange"
+            range-separator="至"
+            start-placeholder="开始日期"
+            end-placeholder="结束日期"
+            format="yyyy 年 MM 月 dd 日"
+            value-format="timestamp"
+    >
+    </el-date-picker>
+    <el-button @click="initEcharts()"> 更新报表 </el-button>
+    <el-tabs v-model="activeName" @tab-click="handleClick" >
+        <el-tab-pane   label="收支折线" name="first">
+<!--            <div>-->
+<!--                <el-row :gutter="20">-->
+<!--                    <el-col :span="8">-->
+<!--                        <div>-->
+<!--                            <el-statistic group-separator="," :precision="2" :value="incomeIncrease" :title="titleMonthIncome">-->
+<!--                                <template slot="prefix">-->
+<!--                                    <i class="el-icon-s-flag" style="color: red"></i>-->
+<!--                                </template>-->
+<!--                                <template slot="suffix">-->
+<!--                                    <i class="el-icon-s-flag" style="color: blue"></i>-->
+<!--                                </template>-->
+<!--                            </el-statistic>-->
+<!--                        </div>-->
+<!--                    </el-col>-->
+<!--                    <el-col :span="8">-->
+<!--                        <div>-->
+<!--                            <el-statistic title="收支比">-->
+<!--                                <template slot="formatter">-->
+<!--                                    <el-tag type="danger"-->
+<!--                                            v-if="!flag" >-->
+<!--                                        {{ratio}}-->
+<!--                                    </el-tag>-->
+<!--                                    <el-tag type="success"-->
+<!--                                            v-else=""-->
+<!--                                    >{{ratio}}-->
+<!--                                    </el-tag>-->
+<!--                                </template>-->
+<!--                            </el-statistic>-->
+<!--                        </div>-->
+<!--                    </el-col>-->
+<!--                    <el-col :span="8">-->
+<!--                        <div>-->
+<!--                            <el-statistic group-separator="," :precision="2" decimal-separator="." :value="expendIncrease" :title="titleMonthExpend">-->
+
+<!--                            </el-statistic>-->
+<!--                        </div>-->
+<!--                    </el-col>-->
+<!--                </el-row>-->
+<!--            </div>-->
+<!--            <el-alert-->
+<!--                    v-if="warning"-->
+<!--                    type="error"-->
+<!--                    effect="dark">-->
+<!--                {{warningMessage}}-->
+<!--            </el-alert>-->
+<!--            <el-alert-->
+<!--                    v-if="!warning"-->
+<!--                    type="success"-->
+<!--                    effect="dark">-->
+<!--                {{warningMessage}}-->
+<!--            </el-alert>-->
+            <div id="first" class="erChart" ></div>
+        </el-tab-pane>
+        <el-tab-pane label="收入构成" name="second" @click="initRoseErcharts('second')"><div id="second" class="erChart" ></div></el-tab-pane>
+        <el-tab-pane label="消费构成" name="third" @click="initRoseErcharts('third')"><div id="third" class="erChart" ></div></el-tab-pane>
+        <!--            <el-tab-pane label="定时任务补偿" name="fourth">定时任务补偿</el-tab-pane>-->
+    </el-tabs>
+
+    <div id="right" ></div>
+</div>
+<script>
+    const x = new Vue({
+        el: '#root',
+        data(){
+            return{
+                activeName: 'first',
+                income:'1',
+                expend:'0',
+                dataList:[
+                    {
+                        name:"工资",
+                        value:3
+                    },
+                    {
+                        name:"餐饮",
+                        value: 1
+                    }
+                ],
+                type:'1',
+                warningMessage:'',
+                warning:false,
+
+                // head
+                like: true,
+                value1: 4154.564,
+                value2: 2222,
+                titleMonthIncome: '本月收入增长',
+                titleMonthExpend: '本月支出增长',
+                incomeIncrease:'',
+                expendIncrease:'',
+                ratio:'',
+                flag:false,
+
+                //
+                searchMonth:[new Date(new Date().getFullYear(), 0).getTime() , new Date().getTime()],
+                pos:''
+            }
+        },
+        methods:{
+            initLeftErcharts(){
+                this.pos = 'first';
+                var _this = this;
+                var myChart = echarts.init(document.getElementById('first'));
+                // 指定图表的配置项和数据
+                option1 = {
+                    title: {
+                        text: '收支汇总表'
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        axisPointer: {
+                            type: 'cross',
+                            label: {
+                                backgroundColor: '#6a7985'
+                            }
+                        }
+                    },
+                    legend: {
+                        data: ['收入', '支出']
+                    },
+
+                    xAxis: [
+                        {
+                            type: 'category',
+                            boundaryGap: false,
+                            data: ['1月', '2月', '3月', '4月', '5月','6月','7月','8月','9月','10月','11月','12月']
+                        }
+                    ],
+                    yAxis:{},
+
+                };
+                myChart.setOption(option1);
+                axios.get("/order/moneyList?type="+_this.income+"&userId="+sessionStorage.getItem('user')+"&begin="+_this.searchMonth[0]+"&end="+_this.searchMonth[1]).then(function (resp){
+                    _this.dataList = resp.data.data;
+                    _this.setIncomeIncrease();
+                    axios.get("/order/moneyList?type="+_this.expend+"&userId="+sessionStorage.getItem('user')+"&begin="+_this.searchMonth[0]+"&end="+_this.searchMonth[1]).then(function (resp) {
+                        _this.setExpendIncrease(resp.data.data);
+                        myChart.setOption({
+                            series: [
+                                {
+                                    name: '支出',
+                                    type: 'line',
+                                    areaStyle: {},
+                                    emphasis: {
+                                        focus: 'series'
+                                    },
+                                    data: resp.data.data
+                                },
+                                {
+                                    name: '收入',
+                                    type: 'line',
+                                    areaStyle: {},
+                                    emphasis: {
+                                        focus: 'series'
+                                    },
+                                    data: _this.dataList
+                                }
+                            ]
+                        })
+                    })
+                })
+            },
+            initRoseErcharts(position,type){
+                this.pos = position;
+                var myChart = echarts.init(document.getElementById(position));
+                var _this = this;
+                option = {
+                    series: [
+                        {
+                            type: 'pie',
+                            data: _this.dataList,
+                            roseType: 'area'
+                        }
+                    ]
+                };
+                axios.get("/order/getMap?userId="+sessionStorage.getItem('user')+'&type='+type+"&begin="+_this.searchMonth[0]+"&end="+_this.searchMonth[1]).then(function (resp) {
+                    myChart.setOption({
+                        tooltip: {},
+                        series: [
+                            {
+                                type: 'pie',
+                                data: resp.data.data,
+                                roseType: 'area'
+                            }
+                        ]
+                    });
+                })
+            },
+            initEcharts(){
+              if(this.pos === 'first'){
+                  this.initLeftErcharts();
+              }else {
+                  this.initRoseErcharts(this.pos,this.pos === 'second' ? 1 : 0)
+              }
+            },
+
+            //head
+            setIncomeIncrease(){
+                var month = new Date().getMonth();
+                this.incomeIncrease = this.dataList[month][1] - this.dataList[month === 0 ? 12 : month-1][1];
+            },
+            setExpendIncrease(data){
+                var month = new Date().getMonth();
+                this.ratio = (this.dataList[month][1]/data[month][1]).toFixed(2);
+                this.flag = (this.dataList[month][1]/data[month][1]) > 1;
+                this.expendIncrease = data[month][1] - data[month === 1 ? 12 : month-1][1];
+            },
+
+            //
+            handleClick(tab) {
+                if (tab.name==='second'){
+                    this.initRoseErcharts(tab.name,this.income);
+                }else if(tab.name === 'third'){
+                    this.initRoseErcharts(tab.name,this.expend);
+                }
+                else {
+                    this.initLeftErcharts();
+                }
+                console.log(tab.name);
+            },
+            getWarning(){
+                var _this = this;
+                axios.get("/warning/orderWarning?userId="+sessionStorage.getItem("user")).then(function (resp) {
+                    _this.warningMessage = resp.data.data;
+                    if (resp.data.code === 50001){
+                        _this.warning = false;
+                    }else {
+                        _this.warning = true;
+                    }
+                })
+            }
+        },
+        created(){
+        },
+        mounted(){
+            this.initLeftErcharts();
+            this.loading = false;
+            this.getWarning();
+            // this.initRightErcharts();
+            // this.initRoseErcharts();
+        }
+
+
+    })
+</script>
+
+</body>
+</html>

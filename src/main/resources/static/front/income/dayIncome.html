@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <script src="../assert/js/vue.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+
+  <link rel="stylesheet" href="../assert/css/common.css">
+  <link rel="stylesheet" href="../assert/common/upload.css">
+
+  <script src="../assert/js/axios.js"></script>
+  <script src="../assert/js/echarts.min.js"></script>
+</head>
+<style>
+  .erChart{
+    width: 500px;
+    height: 400px;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .text {
+    font-size: 14px;
+  }
+
+  .item {
+    margin-bottom: 18px;
+  }
+
+  .clearfix:before,
+  .clearfix:after {
+    display: table;
+    content: "";
+  }
+  .clearfix:after {
+    clear: both
+  }
+
+  .box-card {
+    width: 480px;
+    margin: 0 auto;
+  }
+</style>
+<body>
+<div id="root">
+  <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+    <div style="margin: 20px;width: 100px;height: 20px">
+      <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>收入日报
+    </div>
+  </div>
+  <template>
+    <div>
+      <el-row :gutter="20">
+        <el-col :span="12">
+          <div>
+            <el-statistic group-separator="," :precision="0" :value="count" title="收入单数"></el-statistic>
+          </div>
+        </el-col>
+        <el-col :span="12">
+          <div>
+            <el-statistic group-separator="," :precision="2" decimal-separator="." :value="amount" title="收入总额">
+              <template slot="prefix">
+                <i class="el-icon-s-flag" style="color: red"></i>
+              </template>
+              <template slot="suffix">
+                <i class="el-icon-s-flag" style="color: blue"></i>
+              </template>
+            </el-statistic>
+          </div>
+        </el-col>
+      </el-row>
+      <div id="rose" class="erChart">
+      </div>
+      <el-card class="box-card" >
+        <div slot="header" class="clearfix">
+          <span>收入详情</span>
+        </div>
+        <div v-for="o in orders" :key="o" class="text item">
+          {{'收入名称'+o.orderName +'         '+'金额:'+ o.orderMoney }}
+        </div>
+      </el-card>
+    </div>
+  </template>
+</div>
+</body>
+<script>
+  const x = new Vue({
+              el: '#root',
+              data(){
+                  return{
+                    count: '',
+                    amount: '',
+                    type:1,
+                    title: '今年的增长',
+                    orders:{}
+                  }
+              },
+              methods:{
+                  getHeader(){
+                    var _this = this;
+                    axios.get("/dayOrder/today?type="+ this.type).then(function (resp) {
+                      _this.amount = resp.data.amount;
+                      _this.count = resp.data.count;
+                    })
+                  },
+
+                  getTodayOrders(){
+                    var _this = this;
+                    axios.get("/dayOrder/todayOrder?type=" + this.type +"&begin=" + Date.now() + "&end="+Date.now()).then(function (resp) {
+                      if(resp.data.code === 10001){
+                        _this.orders = resp.data.data;
+                      }else {
+                        _this.$message.error(resp.data.msg || '接口错误');
+                      }
+                    })
+                  },
+
+                initRoseErcharts(){
+                  var myChart = echarts.init(document.getElementById('rose'));
+                  var _this = this;
+                  option = {
+                    series: [
+                      {
+                        type: 'pie',
+                        data: _this.dataList,
+                        roseType: 'area'
+                      }
+                    ]
+                  };
+                  axios.get("/dayOrder/getMap?userId="+sessionStorage.getItem('user')+'&type='+this.type + '&begin='+Date.now()+'&end='+Date.now()).then(function (resp) {
+
+                    if(resp.data.code == 10001){
+                      myChart.setOption({
+                        tooltip: {},
+                        series: [
+                          {
+                            type: 'pie',
+                            data: resp.data.data,
+                            roseType: 'area'
+                          }
+                        ]
+                      });
+                    }else {
+                      _this.$message.error(resp.data.msg || '接口错误');
+                    }
+                  })
+                },
+              },
+              created(){
+              },
+              mounted(){
+                this.getHeader();
+                this.initRoseErcharts();
+                this.getTodayOrders();
+              }
+
+          })
+</script>
+</html>

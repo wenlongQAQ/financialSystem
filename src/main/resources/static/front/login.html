@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户登录</title>
+  <script src="assert/js/vue.js"></script>
+  <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="./assert/css/common.css">
+  <script src="./assert/element-ui/lib/index.js"></script>
+  <script src="assert/js/axios.js"></script>
+
+  <style>
+    .form1{
+      margin: 10% auto;
+      width: 30% ;
+      height: 30%;
+      position: relative;
+      text-align: center;
+      line-height: 50px;
+    }
+    .successButton{
+      height: 20%;
+      margin: 0 auto;
+      text-align: right;
+    }
+    .title-font{
+      font-size: 200%;
+      font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+      color: #909399;
+    }
+  </style>
+</head>
+<body>
+<div id="root"  >
+  <div class="form1">
+    <div class="title-font">个人财务管理系统</div>
+    <el-form label-width="80px" :model="loginTable" size="medium"  >
+      <el-form-item label="账号：">
+        <el-col :span="24" icon="el-icon-lock">
+            <el-input   v-model="loginTable.username" prefix-icon="el-icon-user" ></el-input>
+        </el-col>
+      </el-form-item>
+
+      <el-form-item label="密码：" >
+        <el-col :span="24">
+          <el-input v-model="loginTable.password" prefix-icon="el-icon-lock" ></el-input>
+        </el-col>
+      </el-form-item>
+      <el-form-item label="身份：" >
+        <el-col :span="24">
+          <el-radio v-model="loginTable.identity" label="0">普通用户</el-radio>
+          <el-radio v-model="loginTable.identity" label="1">管理员</el-radio>
+        </el-col>
+      </el-form-item>
+    </el-form>
+    <div class="successButton">
+
+      <el-button type="primary"  style="width: 400px" round @click="userLogon()">登录</el-button>
+      <br/>
+      <el-link type="warning" href="forgetPassword.html" style="float: left" :underline="false">忘记密码...</el-link>
+      <el-link type="success" href="register.html" style="float: right" :underline="false">去注册...</el-link>
+
+
+    </div>
+
+  </div>
+</div>
+
+<script>
+  const x = new Vue({
+              el: '#root',
+              data(){
+                  return{
+                    loginTable:{
+                      username:'',
+                      password:'',
+                      identity:''
+                    }
+                  }
+              },
+              methods:{
+                userLogon(){
+                  var _this = this;
+                  axios.post('/user/logon',this.loginTable).then(function (resp) {
+                    if (resp.data.code === 20001) {
+                      _this.$message.success(resp.data.msg||'登录成功');
+                      if(_this.loginTable.identity == 0){
+                        window.location.href= "personManager.html";
+                      }else{
+                        window.location.href= "changePassword.html";
+                      }
+
+                      // TODO 存储UserID
+                      sessionStorage.setItem('user',resp.data.data.id);
+                      sessionStorage.setItem('user_identity',_this.loginTable.identity);
+                      sessionStorage.setItem('imageName',resp.data.data.userDetail.imageName);
+                      sessionStorage.setItem('name',resp.data.data.userDetail.name);
+
+                    }else {
+                      _this.$message.error(resp.data.msg||'检查你的账户或者密码')
+                    }
+                  })
+                }
+              },
+              created(){
+              },
+              mounted(){
+              }
+
+          })
+</script>
+</body>
+</html>

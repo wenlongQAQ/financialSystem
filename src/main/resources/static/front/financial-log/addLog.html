@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../assert/js/vue.js"></script>
+    <link rel="stylesheet" href="../assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../assert/css/common.css">
+    <link rel="stylesheet" href="../assert/common/upload.css">
+    <script src="../assert/element-ui/lib/index.js"></script>
+    <script src="../assert/js/axios.js"></script>
+    <script src="../assert/js/order.js"></script>
+</head>
+<body>
+<div id="root">
+    <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+        <div style="margin: 20px;width: 100px;height: 20px">
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>新增日志
+        </div>
+    </div>
+    <el-form :model="form" ref="form"  style="margin: 0 auto" >
+        <el-row>
+            <el-col :span="8">
+                <el-form-item label="日志标题" :label-width="formLabelWidth" >
+                    <el-input v-model="form.title" autocomplete="off" ></el-input>
+                </el-form-item>
+            </el-col>
+        </el-row>
+
+
+        <el-form-item label="隐私性" :label-width="formLabelWidth" >
+            <el-switch
+                    v-model="form.visible"
+                    active-text="公开"
+                    inactive-text="私有">
+            </el-switch>
+        </el-form-item>
+        <el-row>
+            <el-col :span="8">
+                <el-form-item label="正文" :label-width="formLabelWidth">
+                    <el-input v-model="form.logText" autocomplete="off" type="textarea"></el-input>
+                </el-form-item>
+            </el-col>
+        </el-row>
+
+    </el-form>
+    <el-row>
+        <el-col :span="5" style="height: 32px"></el-col>
+        <el-col :span="5" >
+            <el-button @click="clearDialog()">清空</el-button>
+            <el-button type="primary" @click="confirmAdd()">确 定</el-button>
+        </el-col>
+        <el-col :span="4" style="height: 32px"></el-col>
+        <el-col :span="4" style="height: 32px"></el-col>
+
+    </el-row>
+
+</div>
+
+<script>
+    const x = new Vue({
+        el: '#root',
+        data(){
+            return{
+                formLabelWidth:'120px',
+                form:{},
+                id:'',
+
+            }
+        },
+        methods:{
+            goBack(){
+                window.location.href='myLog.html';
+            },
+            confirmAdd(){
+                var _this = this;
+                this.form.userId = sessionStorage.getItem('user');
+                axios.post("/financial",this.form).then(function (resp) {
+                    if(resp.data.code === 50001){
+                        _this.$message.success(resp.data.msg || '新增成功');
+                    }else{
+                        _this.$message.error(resp.data.msg || '接口错误')
+                    }
+                })
+            },
+            clearDialog(){
+                this.form = {};
+            },
+
+        },
+        created(){
+        },
+        mounted(){
+
+        }
+
+    })
+</script>
+
+</body>
+</html>

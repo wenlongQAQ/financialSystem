@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>个人财务管理系统</title>
+    <script src="assert/js/vue.js"></script>
+    <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="./assert/css/common.css">
+    <link rel="stylesheet" href="./assert/css/index.css">
+    <script src="./assert/element-ui/lib/index.js"></script>
+    <script src="assert/js/axios.js"></script>
+
+</head>
+<body>
+<div id="root" style="height: 100%" >
+    <el-container>
+        <el-header>
+            <span style="font-size: 150%; text-align: left;">个人财务管理系统</span>
+
+            <span style="font-size: 150%; text-align: left; float: right;margin-right: 20px">
+                  <i class="el-icon-switch-button" @click="userLoginOut()"></i>
+                  {{ name === null   ? '未登录':name }}
+              <el-image style="width: auto; height: 40px; border:none;cursor: pointer;"
+                        :src="getImage()">
+                    <div slot="error" class="image-slot">
+                        <img :src="squareUrl" style="width: 40px; height: 40px; border:none;" >
+                    </div>
+                </el-image>
+              </span>
+        </el-header>
+        <div style="background-color: #409EFF;height: 10px"></div>
+
+        <el-container>
+            <el-aside width="10%">
+                <el-menu
+                        default-active="2"
+                        class="el-menu-vertical-demo"
+                        text-color="white"
+                        background-color="transparent"
+                        @open="handleOpen"
+                        @close="handleClose"
+                        v-if="identity!=1"
+                >
+                    <el-menu-item index="1">
+                        <template slot="title">
+                            <i class="el-icon-location"></i>
+                            <span @click="changeIframe('personManager.html')">个人中心</span>
+                        </template>
+                    </el-menu-item>
+                    <el-submenu index="2">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">收入管理</span>
+                        </template>
+                            <el-menu-item index="2-1" @click="changeIframe('income.html')"  >收入总览</el-menu-item>
+                            <el-menu-item index="2-2" @click="changeIframe('income/addIncome.html')">新增收入</el-menu-item>
+                            <el-menu-item index="2-3" @click="changeIframe('income/dayIncome.html')">收入日报</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="3">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">消费管理</span>
+                        </template>
+                        <el-menu-item index="3-1" @click="changeIframe('expend.html')" >消费总览</el-menu-item>
+                        <el-menu-item index="3-2" @click="changeIframe('expend/addExpend.html')">新增消费</el-menu-item>
+                        <el-menu-item index="3-3" @click="changeIframe('expend/dayExpend.html')">支出日报</el-menu-item>
+                    </el-submenu>
+
+                    <el-submenu index="4">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">理财计划</span>
+                        </template>
+                        <el-menu-item index="4-1"@click="changeIframe('plan/allPlan.html')" >计划总览</el-menu-item>
+                        <el-menu-item index="4-2">新增计划</el-menu-item>
+                    </el-submenu>
+                    <el-submenu index="5">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">理财日志</span>
+                        </template>
+                        <el-menu-item index="5-1" @click="changeIframe('financial-log/myLog.html')">我的日志</el-menu-item>
+                        <el-menu-item index="5-2" @click="changeIframe('financial-log/public_log.html')">公开日志</el-menu-item>
+                        <el-menu-item index="5-3" @click="changeIframe('financial-log/addLog.html')">编写日志</el-menu-item>
+                    </el-submenu>
+
+                    <el-menu-item index="6" @click="changeIframe('financialStatement.html')">财务报表</el-menu-item>
+
+                    <el-menu-item index="7">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">理财建议</span>
+                        </template>
+                    </el-menu-item>
+                </el-menu>
+
+<!--                <el-menu-->
+
+<!--                        :unique-opened="false"-->
+<!--                        :collapse-transition="false"-->
+<!--                        background-color="transparent"-->
+<!--                        text-color="white"-->
+<!--                        active-text-color="red"-->
+<!--                >-->
+<!--                    <div v-for="item in menuList" :key="item.id">-->
+<!--                        <el-menu-item  :index="item.id" @click="menuHandle(item,false)">-->
+<!--                            <i class="iconfont" :class="item.icon"></i>-->
+<!--                            <span slot="title" style="font-size: 14px">-->
+<!--                                {{item.name}}-->
+<!--                            </span>-->
+<!--                        </el-menu-item>-->
+<!--                    </div>-->
+<!--                </el-menu>-->
+            </el-aside>
+            <el-main v-loading="loading">
+                <iframe :src="iframeUrl" width="100%" height="99%" style="border: none"></iframe>
+            </el-main>
+        </el-container>
+    </el-container>
+</div>
+
+<script>
+    const x = new Vue({
+        el: '#root',
+        data(){
+            return{
+                name:'',
+                squareUrl: "https://cube.elemecdn.com/9/c2/f0ee8a3c7c9638a54940382568c9dpng.png",
+                sizeList: ["large", "medium", "small"],
+                iframeUrl:'',
+                menuActived:'',
+                goBackFlag:'',
+                headTitle:'',
+                loading:false,
+                imageName:'',
+                identity:'',
+                rootMenuList:[
+                    {
+                        id: '1',
+                        name: '修改密码',
+                        url: 'changePassword.html',
+                        icon: 'el-icon-s-tools'
+                    },
+                    {
+                        id: '2',
+                        name: '用户管理',
+                        url: 'userManager.html',
+                        icon: 'el-icon-warning'
+                    },
+                ],
+                menuList:[],
+            }
+        },
+        methods:{
+            getImage () {
+                return '/common/download?name='+this.imageName;
+            },
+            userLoginOut(){
+                var userId = sessionStorage.getItem('user');
+                var _this = this;
+                axios.put("/user/loginOut?userId="+userId).then(function (resp) {
+                    if (resp.data.code===50001){
+                        _this.$message.success(resp.data.msg);
+                        _this.iframeUrl = "login.html";
+                        sessionStorage.removeItem('user');
+                        sessionStorage.removeItem('imageName');
+                        sessionStorage.removeItem('name');
+                        sessionStorage.removeItem('user_identity')
+                        location.reload();
+                    }else {
+                        _this.$message.error(resp.data.msg);
+                    }
+                })
+            },
+            menuHandle(item, goBackFlag) {
+                var item1 = sessionStorage.getItem('user');
+                if(item1!=null){
+                    this.menuActived = item.id;
+                    this.iframeUrl = item.url;
+                    this.headTitle = item.name;
+                    sessionStorage.setItem('history',item.url);
+                }else {
+                    this.iframeUrl = 'login.html';
+                }
+
+            },
+            changeIframe(url){
+                if(sessionStorage.getItem('user')!=null){
+                    this.iframeUrl = url;
+                    sessionStorage.setItem('history',url);
+                }else{
+                    this.iframeUrl = "login.html";
+                }
+
+            },
+            handleOpen(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            handleClose(key, keyPath) {
+                console.log(key, keyPath);
+            }
+        },
+        created(){
+        },
+        mounted(){
+            // TODO 根据不同的权限显示不同的菜单
+            if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
+                this.iframeUrl = sessionStorage.getItem('history');
+                console.log(sessionStorage.getItem('history'));
+                console.log(this.iframeUrl);
+            }
+            var _this = this;
+            if(sessionStorage.getItem("user_identity") == 1){
+                _this.iframeUrl = "changePassword.html";
+            }else if(sessionStorage.getItem("user_identity") == 0){
+                if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
+                    this.iframeUrl = sessionStorage.getItem('history');
+                    console.log(sessionStorage.getItem('history'));
+                    console.log(this.iframeUrl);
+                }else{
+                    _this.iframeUrl = "personManager.html";
+                }
+            }else{
+                _this.iframeUrl = "login.html";
+            }
+            setInterval(function () {
+                this.identity = sessionStorage.getItem("user_identity");
+                let identity = sessionStorage.getItem("user_identity");
+                _this.name = identity == 1? '管理员' : sessionStorage.getItem('name');
+                _this.imageName =identity == 1 ? 'root' : sessionStorage.getItem('imageName');
+                _this.getImage();
+            },1000)
+            setInterval(function (){
+                let identity = sessionStorage.getItem('user_identity');
+                if(identity == 1){
+                    _this.menuList = _this.rootMenuList;
+                }else{
+                    _this.menuList = _this.userMenuList;
+                }
+            },1000)
+        }
+
+    })
+</script>
+</body>
+</html>

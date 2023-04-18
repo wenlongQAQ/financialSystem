@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="assert/js/vue.js"></script>
+    <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="./assert/css/common.css">
+    <link rel="stylesheet" href="./assert/common/upload.css">
+    <script src="./assert/element-ui/lib/index.js"></script>
+    <script src="assert/js/axios.js"></script>
+</head>
+<style>
+    .form1{
+        margin: 0 auto;
+        width: 80%;
+        height: 80%;
+
+    }
+</style>
+<body style="height: 100%;width: 100%">
+<div id="root">
+    <div style="margin-top: 20px;background-color: white">
+        <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+            <div style="margin: 20px;width: 100px;height: 20px">
+                <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>个人中心
+            </div>
+        </div>
+    </div>
+    <div style="background-color: white">
+        <div  class="form1">
+            <br/>
+            <el-form   :model="form" :rules="rules"  ref="form" label-width="60px">
+                <el-row>
+                    <el-col :span="8">
+                        <el-form-item label="用户名/账号:">
+                            <el-input v-model="form.username" disabled></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-form-item label="姓名:" prop="name">
+                            <el-input v-model="form.userDetail.name"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="8">
+                        <el-form-item label="性别:">
+                            <el-radio-group v-model="form.userDetail.gender">
+                                <el-radio :label="0">男</el-radio>
+                                <el-radio :label="1">女</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-form-item label="年龄:" prop="age">
+                            <el-input-number v-model="form.userDetail.age" controls-position="right"  :min="1" :max="120"></el-input-number>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-row>
+                    <el-col :span="8">
+                        <el-form-item label="手机:" prop="phoneNum">
+                            <el-input v-model.number="form.phoneNum"></el-input>
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-form-item label="邮箱:" prop="email">
+                            <el-input v-model.email="form.email"></el-input>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+                <el-form-item label="头像:">
+                    <el-upload
+                            class="avatar-uploader"
+                            action="/common/uploadImg"
+                            :show-file-list="false"
+                            :on-success="handleAvatarSuccess"
+                            :before-upload="beforeAvatarUpload"
+                            ref="tableForm.uploadImg"
+                    >
+                        <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                    </el-upload>
+                </el-form-item>
+            </el-form>
+            <el-row>
+                <el-col :span="3">
+                    <el-button type="success" @click="editUser('form')">修改</el-button>
+                </el-col>
+                <el-col :span="2">
+                    <el-link type="primary" href="changePassword.html" style="float: left" :underline="false">修改密码...</el-link>
+            </el-col>
+
+            </el-row>
+        </div>
+    </div>
+
+
+
+</div>
+<script>
+    const x = new Vue({
+        el: '#root',
+        data(){
+            var checkPhoneNum = (rule, value, callback) => {
+                // if (value===''){
+                //     callback(new Error('不能为空'))
+                // }
+                if(value ==='')
+                    callback();
+                if (!/^((12[0-9])|(13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(18[0,5-9]))\d{8}$/.test(value)) {
+                    callback(new Error('手机号格式不正确'));
+                } else {
+                    callback();
+                }
+            };
+            var checkNum = (rule, value, callback) => {
+            var numReg=/^[0-9]*$/;
+                    if (!numReg.test(value)) {
+                        callback(new Error('请输入数字值'));
+                    } else {
+                        if (value < 18) {
+                            callback(new Error('必须年满18岁'));
+                        } else {
+                            callback();
+                        }
+                    }
+            };
+            var checkEmail = (rule, value, callback) => {
+                // if (value===''){
+                //     callback(new Error('不能为空'))
+                // }
+                if(value ==='')
+                    callback();
+                var emailRegExp=/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+                if (!emailRegExp.test(value)) {
+                    callback(new Error('邮箱格式错误'));
+                }else {
+                    callback();
+                }
+            };
+
+            return{
+                size:'',
+                test:'1',
+                form:{
+                    username:'',
+                    phoneNum:'',
+                    email:'',
+                    userDetail:{}
+                },
+                imageUrl:'',
+                rules: {
+                    age:[
+                        {type: 'number',trigger:'blur',message:'年龄必须为数字值'}
+                    ],
+                    phoneNum: [
+                        {validator: checkPhoneNum, trigger:'blur'}
+                    ],
+                    email: [
+                        { validator: checkEmail, trigger: 'blur' }
+                    ],
+                }
+            }
+        },
+        methods:{
+            editUser(formName){
+                var _this = this;
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        this.$confirm('确认修改？, 是否继续?', '确定', {
+                            'confirmButtonText': '确定',
+                            'cancelButtonText': '取消',
+                        }).then(() => {
+                            axios.put("/uDetail",_this.form).then(function (resp){
+                                if (resp.data.code === 50001) {
+                                    _this.$message.success(resp.data.msg||'修改成功');
+                                    sessionStorage.setItem('imageName',_this.form.userDetail.imageName);
+                                    sessionStorage.setItem('name',_this.form.userDetail.name);
+                                }
+                            })
+                        })
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+
+
+            },
+            selectUserDetail(){
+                var _this = this;
+                axios.get("/uDetail?userId="+sessionStorage.getItem("user")).then(function (resp) {
+                    _this.form = resp.data.data;
+                })
+            },
+
+            handleAvatarSuccess (response, file, fileList) {
+                this.form.userDetail.imageName = response.data;
+                this.imageUrl = '/common/download?name='+response.data
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传头像图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            }
+        },
+        created(){
+        },
+        mounted(){
+            this.selectUserDetail();
+        }
+    })
+</script>
+</body>
+</html>

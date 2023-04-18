@@ -1,0 +1,17 @@
+
+spring:
+  mail:
+    host: smtp.qq.com # 邮件服务器供应商
+    username: 2082841288@qq.com # 账号
+    password: rrmgwedtwcjhbcca #邮件服务器供应商提供给你的密码
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    name: defaultDataSource
+    url: jdbc:mysql://localhost:3306/financialsystem
+    username: root
+    password: Liwenlong.0328
+filepath: D:\\financialSystem\\personalFinancialManagementSystem\\image\\
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #开启sql日志
+

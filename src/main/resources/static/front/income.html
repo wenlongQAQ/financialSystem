@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="assert/js/vue.js"></script>
+    <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="./assert/css/common.css">
+    <link rel="stylesheet" href="./assert/common/upload.css">
+    <script src="./assert/element-ui/lib/index.js"></script>
+    <script src="assert/js/axios.js"></script>
+    <script src="assert/js/order.js"></script>
+</head>
+<body>
+<div id="root" width>
+    <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+        <div style="margin: 20px;width: 100px;height: 20px">
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>收入管理
+        </div>
+    </div>
+    <template>
+<!--        <el-button type="primary" @click="addOrder()">新增</el-button>-->
+        <el-button @click="handleDelete('批量', null)" type="danger">批量删除</el-button>
+
+        <el-date-picker
+                v-model="value1"
+                type="daterange"
+                range-separator="至"
+                start-placeholder="开始日期"
+                end-placeholder="结束日期"
+                format="yyyy 年 MM 月 dd 日"
+                value-format="timestamp"
+        >
+        </el-date-picker>
+        <el-button icon="el-icon-search" circle @click = "initPage()"></el-button>
+        <el-table
+                :data="tableData"
+                style="width: 100%"
+                @selection-change="handleSelectionChange"
+                ref="selectionTable"
+        >
+            <el-table-column
+                    type="selection"
+                    width="55">
+            </el-table-column>
+            <el-table-column
+                    label="日期"
+                    width="180">
+                <template slot-scope="scope">
+                    <i class="el-icon-time"></i>
+                    <span style="margin-left: 10px">{{ dateFormate(scope.row.orderTime) }}</span>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    prop="orderName"
+                    label="账单名称"
+                    width="180"
+            >
+            </el-table-column>
+
+            <el-table-column
+                    label="收入类型"
+                    width="180">
+                <template slot-scope="scope">
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.orderTypeName }}</el-tag>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column
+                    prop="orderNum"
+                    label="账单号"
+                    width="180"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="orderMoney"
+                    label="金额"
+                    width="180"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="comment"
+                    label="备注"
+                    width="180"
+            >
+            </el-table-column>
+            <el-table-column label="图片" :label-width="180">
+                <template slot-scope="{ row }">
+                    <el-image style="width: auto; height: 40px; border:none;cursor: pointer;"
+                              :src="getImage(row.orderImage)"
+                              :preview-src-list="[ `/common/download?name=${row.orderImage}` ]" >
+                        <div slot="error" class="image-slot">
+                            <img src="https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png" style="width: auto; height: 40px; border:none;"/>
+
+                        </div>
+                    </el-image>
+                </template>
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+                    <el-button
+                            size="mini"
+                            @click="handleEdit(scope.row.id)">编辑</el-button>
+                    <el-button
+                            size="mini"
+                            type="danger"
+                            @click="handleDelete('单删',scope.row.id)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <el-pagination
+                class="pageList"
+                :page-sizes="[5, 10, 20, 40]"
+                :page-size="pageSize"
+                layout="total, sizes, prev, pager, next, jumper"
+                :total="counts"
+                @size-change="handleSizeChange"
+                @current-change="handleCurrentChange"
+        ></el-pagination>
+    </template>
+
+
+    <el-dialog title="收入信息" :visible.sync="dialogFormVisible">
+        <el-form :model="form" ref="form" :rules="rules"  >
+            <el-form-item label="收入名称" :label-width="formLabelWidth" prop="nameRequired">
+                <el-input v-model="form.orderName" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="日期" :label-width="formLabelWidth" prop="dateRequired">
+                <el-date-picker
+                        v-model="form.orderTime"
+                        type="date"
+                        placeholder="选择账单日期">
+                </el-date-picker>
+            </el-form-item>
+
+            <el-form-item label="账单来源" :label-width="formLabelWidth">
+                <el-input v-model="form.comment" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="金额" :label-width="formLabelWidth" prop="orderMoney">
+                <el-input v-model.numer="form.orderMoney" autocomplete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="请选择收入类型" prop="dataRequired">
+                <template>
+                    <el-select v-model="form.orderTypeId" filterable placeholder="请选择" >
+                        <el-option
+                                v-for="item in orderType"
+                                :label="item.name"
+                                :value="item.id">
+                        </el-option>
+                    </el-select>
+                </template>
+            </el-form-item>
+            <el-form-item label="账单详情" :label-width="formLabelWidth">
+                <el-upload
+                        class="avatar-uploader"
+                        action="/common/uploadImg"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess"
+                        :before-upload="beforeAvatarUpload"
+                        ref="uploadImg"
+                >
+                    <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+            </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+            <el-button @click="dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="confirmAdd('form')">确 定</el-button>
+        </div>
+    </el-dialog>
+
+
+</div>
+<script>
+    const x = new Vue({
+        el: '#root',
+        data() {
+            var checkNum = (rule, value, callback) => {
+                var numReg=/^[0-9]*$/;
+                if (!numReg.test(value)) {
+                    callback(new Error('请输入数字值'));
+                }else {
+                    callback();
+                }
+
+            };
+            var checkname = (rule, value, callback) => {
+                if(this.form.orderName === undefined) {
+                    callback(new Error('不能为空'))
+                }
+                console.log(value)
+                callback();
+            };
+            var checkDate = (rule, value, callback) => {
+                if(this.form.orderTime === undefined) {
+                    callback(new Error('不能为空'));
+                }
+                console.log(value)
+                callback();
+            };
+
+            return {
+                value1:'1', //日期选择器
+                checkList: [],
+                tableData: [],
+                //分页参数
+                input: '', // 输入跳转到哪一页
+                counts: 0, // 总共多少数据
+                page: 1,// 当前是多少页
+                pageSize: 5, // 每页多少数据，
+                //表单样式数据
+                dialogFormVisible: false,
+                formLabelWidth: '120px',
+                //新增 修改相关的数据
+                orderType:[],
+                form:{},
+                //图片
+                imageUrl:'',
+                selectedOrderType:'',
+                incomeOrExpend: '1',
+                rules: {
+                    orderNum:[
+                        {required:true , trigger:'blur',message:'不能为空'},
+                        {validator: checkNum,trigger:'blur'}
+                    ],
+                    orderMoney: [
+                        {required:true , trigger:'blur',message:'不能为空'},
+                        {validator: checkNum,trigger:'blur'}
+                    ],
+                    nameRequired:[
+                        {validator: checkname,trigger:'blur'}
+                    ],
+                    dateRequired:[
+                        {validator: checkDate,trigger:'blur'}
+                    ]
+                }
+            }
+        },
+        methods:{
+            //新增订单
+            addOrder(){
+                for(let i in this.form){
+                    this.form[i] = "";
+                }
+                this.dialogFormVisible = true;
+                this.getOrderType();
+            },
+            confirmAdd(formName){
+                this.$refs[formName].validate((valid) => {
+                    var _this = this;
+                    this.form.type = 1;
+                    if (valid) {
+                        axios.put("/order",this.form).then(function (resp) {
+                            if (resp.data.code === 50001) {
+                                _this.$message.success(resp.data.msg)
+                                _this.dialogFormVisible = false;
+                                _this.initPage();
+                            }else {
+                                _this.$message.error(resp.data.msg||'接口错误')
+                            }
+                        })
+                    } else {
+                        return false;
+                    }
+                });
+            },
+            //
+            getOrderType(){
+                var _this = this;
+                axios.get("/orderType?type=" + this.incomeOrExpend).then(function (resp) {
+                    _this.orderType = resp.data.data;
+                })
+            },
+            //表格
+            handleEdit(id) {
+                this.form  =  {};
+                this.getOrderType();
+                this.dialogFormVisible = true;
+                var _this = this;
+                axios.get("/order/getById?id=" + id).then(function (resp) {
+                    if (resp.data.code === 10001) {
+                        _this.form = resp.data.data;
+                    }else {
+                        _this.$message.error(resp.data.msg||'接口错误');
+                    }
+
+                })
+
+            },
+            handleDelete(type,id) {
+                if (type === '批量' && id === null) {
+                    if (this.checkList.length === 0) {
+                        return this.$message.error('请选择删除对象')
+                    }
+                }
+                this.$confirm('确认删除该记录, 是否继续?', '确定删除', {
+                    'confirmButtonText': '确定',
+                    'cancelButtonText': '取消',
+                }).then(() => {
+                    deleteOrder(type === '批量' ? this.checkList.join(',') : id).then(res => {
+                        if (res.data.code === 50001) {
+                            this.$message.success('删除成功！')
+                            this.initPage(1);
+                        } else {
+                            this.$message.error( '操作失败')
+                        }
+                    }).catch(err => {
+                        this.$message.error('请求出错了：' + err)
+                    })
+                })
+            },
+            handleSelectionChange(val) {
+                let checkArr = []
+                val.forEach((n) => {
+                    console.log(n.id)
+                    checkArr.push(n.id)
+                })
+                this.checkList = checkArr
+            },
+            getImage (imageName) {
+                return '/common/download?name='+imageName
+            },
+
+            //分页
+            initPage(){
+                var _this = this;
+                // axios.get("/order/page?page="+this.page+"&pageSize="+this.pageSize+"&type="+1).then(function (resp) {
+                //     _this.tableData = resp.data.data.records || []
+                //     _this.counts = resp.data.data.total
+                //     if (resp.data.code != 10001)
+                //         _this.$message.error(resp.data.msg || "接口错误");
+                // })
+                this.value1===null?this.value1 = '1':console.log(1);
+                if (this.value1[0] !== '1') {
+                    axios.get("/order/page?page=" + this.page + "&pageSize=" + this.pageSize + "&type=" + this.incomeOrExpend + "&dates=" + this.value1[0] + ',' + this.value1[1]).then(function (resp) {
+                        _this.tableData = resp.data.data.records;
+
+                        _this.counts = resp.data.data.total
+                        if (resp.data.code != 10001)
+                            _this.$message.error(resp.data.msg || "接口错误");
+
+                    })
+                }else {
+                    axios.get("/order/page?page=" + this.page + "&pageSize=" + this.pageSize + "&type=" + this.incomeOrExpend).then(function (resp) {
+                        _this.tableData = resp.data.data.records;
+                        _this.counts = resp.data.data.total
+                        if (resp.data.code != 10001)
+                            _this.$message.error(resp.data.msg || "接口错误");
+
+                    })
+                }
+            },
+            handleSizeChange (val) {
+                this.pageSize = val
+                this.initPage(1)
+            },
+            handleCurrentChange (val) {
+                this.page = val
+                this.initPage(1)
+            },
+
+            //图片上传
+            handleAvatarSuccess (response, file, fileList) {
+                this.form.orderImage = response.data;
+                this.imageUrl = '/common/download?name='+response.data
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传头像图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
+            //按时间查询
+            // selectByTime(){
+            //     var _this = this;
+            //     axios.get("/order/page?page="+this.page+"&pageSize="+this.pageSize+"&type="+1 +"&dates=" +this.value1[0]+',' + this.value1[1]).then(function (resp) {
+            //         _this.tableData = resp.data.data.records || []
+            //         _this.counts = resp.data.data.total
+            //         if (resp.data.code != 10001)
+            //             _this.$message.error(resp.data.msg||"接口错误");
+            //
+            //     })
+            // }
+
+            dateFormate(value) {
+                let date = new Date(value);
+                let y = date.getFullYear();
+                let MM = date.getMonth() + 1;
+                MM = MM < 10 ? ('0' + MM) : MM;
+                let d = date.getDate();
+                d = d < 10 ? ('0' + d) : d;
+                let h = date.getHours();
+                h = h < 10 ? ('0' + h) : h;
+                let m = date.getMinutes();
+                m = m < 10 ? ('0' + m) : m;
+                let s = date.getSeconds();
+                s = s < 10 ? ('0' + s) : s;
+                return y + '-' + MM + '-' + d ;
+            }
+        },
+        created(){
+        },
+        mounted(){
+            this.initPage();
+        }
+
+    })
+</script>
+</body>
+</html>
