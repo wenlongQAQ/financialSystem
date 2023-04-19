@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>注册账号</title>
-    <<script src="assert/js/vue.js"></script>
+    <script src="assert/js/vue.js"></script>
     <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="./assert/css/common.css">
     <script src="./assert/element-ui/lib/index.js"></script>
@@ -25,32 +25,44 @@
         .title-font{
             font-size: 200%;
             font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
-            color: #909399;
+            color: #28384f;
         }
     </style>
 </head>
-<body>
-<div id="root"  >
-    <div class="form1">
-        <div class="title-font">个人财务管理系统</div>
+<body class="loginBKImage">
+<div id="root">
+    <div class="form1" style="">
+        <div class="title-font" >个人财务管理系统</div>
         <el-form label-width="80px" :model="registerTable" size="medium" :rules="rules"  ref="registerTable"  >
-            <el-form-item label="账号：" prop="username">
+            <el-form-item  prop="username">
+                <span slot="label" style="color: #28384f">
+                账号：
+               </span>
                 <el-col :span="24" icon="el-icon-lock">
                     <el-input   v-model="registerTable.username" prefix-icon="el-icon-user" ></el-input>
                 </el-col>
             </el-form-item>
 
-            <el-form-item label="密码：" prop="password" >
+            <el-form-item prop="password" >
+                <span slot="label" style="color: #28384f">
+                密码：
+               </span>
                 <el-col :span="24">
                     <el-input v-model="registerTable.password" prefix-icon="el-icon-lock" ></el-input>
                 </el-col>
             </el-form-item>
-            <el-form-item label="手机号：" prop="phoneNum" >
+            <el-form-item prop="phoneNum" >
+                <span slot="label" style="color: #28384f">
+                手机号：
+               </span>
                 <el-col :span="24">
                     <el-input v-model="registerTable.phoneNum" prefix-icon="el-icon-phone-outline" ></el-input>
                 </el-col>
             </el-form-item>
-            <el-form-item label="邮箱：" prop="email" >
+            <el-form-item  prop="email" >
+                <span slot="label" style="color: #28384f">
+                邮箱：
+               </span>
                 <el-col :span="18">
                     <el-input v-model="registerTable.email" prefix-icon="el-icon-message" ></el-input>
                 </el-col>
@@ -59,6 +71,9 @@
                 </el-col>
             </el-form-item>
             <el-form-item label="请输入验证码" prop="code" >
+                <span slot="label" style="color: #28384f">
+                验证码
+               </span>
                 <el-col :span="24">
                     <el-input v-model="registerTable.code"  ></el-input>
                 </el-col>

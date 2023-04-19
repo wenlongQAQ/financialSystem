@@ -21,14 +21,15 @@ public interface OrderMapper extends BaseMapper<Order> {
     public List<HashMap<String,String>> getMoneyAndTypeMap(String userId, Integer type, java.sql.Date begin, java.sql.Date end);
     @Select("select sum(order_money) sum,month(order_time) month from orderdetail where type = #{type} and user_id = #{userId} and order_time between #{begin} and #{end}  group by month(order_time) order by month(order_time) asc")
     public List<Map> getAllMonthMoney(Integer type, String userId, java.sql.Date begin, java.sql.Date end);
-    @Select("select count(1) count,sum(order_money) amount from orderdetail where day(order_time) = day(now()) and year(order_time) = year(now()) and month(order_time) = month(now()) and type=#{type};")
-    public DayOrder getDayIncome(String type);
-    @Select("select * from orderdetail od where od.type = #{type} " +
+    @Select("select count(1) count,sum(order_money) amount from orderdetail where user_id = #{userId} day(order_time) = day(now()) and year(order_time) = year(now()) and month(order_time) = month(now()) and type=#{type};")
+    public DayOrder getDayIncome(String userId,String type);
+    @Select("select * from orderdetail od where od.user_id = #{userId} " +
+            "and od.type = #{type} " +
             "and year(od.order_time) between year(#{begin}) and year(#{end})" +
             "and month(od.order_time) between month(#{begin}) and month(#{end}) " +
             "and day(od.order_time) between day(#{begin}) and day(#{end})"
     )
-    List<Order> getDayOrderDetail(String type, java.sql.Date begin, java.sql.Date end);
+    List<Order> getDayOrderDetail(String userId,String type, java.sql.Date begin, java.sql.Date end);
 
     @Select("select SUM(od.order_money) as value,ot.name as name\n" +
             "from orderdetail od , order_type ot  where od.user_id = #{userId} " +

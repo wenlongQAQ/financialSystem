@@ -13,8 +13,8 @@ public interface OrderService extends IService<Order> {
     public List<HashMap<String,String>> getMoneyAndTypeMap(String userId, Integer type,Date begin, Date end);
     public Integer countDangerOrder();
     List<String> getWarningList(String userId);
-    DayOrder getDayIncome(String type);
+    DayOrder getDayIncome(String userId, String type);
 
     List<HashMap<String,String>> getMoneyAndTypeMapByDate(String userId, String type, Date begin, Date end);
-    List<Order> getDayOrderDetail(String type, java.sql.Date begin, java.sql.Date end);
+    List<Order> getDayOrderDetail(String userId,String type, java.sql.Date begin, java.sql.Date end);
 }

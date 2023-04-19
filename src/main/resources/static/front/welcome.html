@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="assert/js/vue.js"></script>
+    <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="./assert/css/common.css">
+    <link rel="stylesheet" href="./assert/css/index.css">
+    <script src="./assert/element-ui/lib/index.js"></script>
+    <script src="assert/js/axios.js"></script>
+    <script src="assert/js/advice.js"></script>
+</head>
+<style>
+    .welcomeUser{
+        height: 200px;
+        color: #28384f;
+        /*color: #909399;*/
+        margin: 200px auto;
+        width: 1000px;
+        font-size: 45px;
+
+    }
+</style>
+<body class="loginBKImage">
+<div id="root" >
+    <h1 class="welcomeUser">欢迎{{username}}访问本系统</h1>
+</div>
+
+    <script>
+        const x = new Vue({
+            el: '#root',
+            data(){
+                return{
+                    src:'assert/images/4d3ea53c084bad6931a56d5158a48jpeg.jpeg',
+                    username:'',
+                }
+            },
+            methods:{
+                getRecentAdvice(){
+                    var _this = this;
+                    getAdvice(sessionStorage.getItem('user'),'recent').then(resp => {
+                        for(let i = 0; i < resp.data.data.length;i++){
+                            _this.$notify.info({
+                                title: resp.data.data[i].title,
+                                message: resp.data.data[i].text,
+                                duration: 0
+                            });
+                        }
+                    })
+                }
+            },
+            created(){
+            },
+            mounted(){
+                this.username = sessionStorage.getItem('name');
+                this.getRecentAdvice();
+            }
+
+        })
+    </script>
+
+</body>
+</html>

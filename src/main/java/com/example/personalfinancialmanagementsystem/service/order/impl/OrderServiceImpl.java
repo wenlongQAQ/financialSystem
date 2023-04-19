@@ -92,8 +92,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public DayOrder getDayIncome(String type) {
-        DayOrder dayIncome = orderMapper.getDayIncome(type);
+    public DayOrder getDayIncome(String userId, String type) {
+        DayOrder dayIncome = orderMapper.getDayIncome(userId,type);
         if (dayIncome.getAmount() == null) {
             dayIncome.setAmount(0.0);
         }
@@ -106,8 +106,8 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
     }
 
     @Override
-    public List<Order> getDayOrderDetail(String type, java.sql.Date begin, java.sql.Date end) {
-        return orderMapper.getDayOrderDetail(type, begin, end);
+    public List<Order> getDayOrderDetail(String userId,String type, java.sql.Date begin, java.sql.Date end) {
+        return orderMapper.getDayOrderDetail(userId,type, begin, end);
     }
 
 

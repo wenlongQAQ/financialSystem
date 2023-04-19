@@ -11,7 +11,7 @@
     <script src="../assert/js/axios.js"></script>
     <script src="../assert/js/order.js"></script>
 </head>
-<body>
+<body class="bkImage">
 <div id="logRoot">
     <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
         <div style="margin: 20px;width: 100px;height: 20px">
@@ -30,7 +30,7 @@
                 style="width: 100%">
             <el-table-column
                     label="创建日期"
-                    width="180">
+                    width="280">
                 <template slot-scope="scope">
                     <div slot="reference" class="name-wrapper">
                         <el-tag size="medium">{{ scope.row.saveTime.join('-') }}</el-tag>
@@ -39,7 +39,7 @@
             </el-table-column>
             <el-table-column
                     label="更新日期"
-                    width="180">
+                    width="280">
                 <template slot-scope="scope">
                     <div slot="reference" class="name-wrapper">
                         <el-tag size="medium">{{ scope.row.updateTime != null ? scope.row.updateTime.join('-') : scope.row.saveTime.join('-')  }}</el-tag>
@@ -50,28 +50,29 @@
             <el-table-column
                     prop="title"
                     label="标题"
-                    width="180">
+                    width="280">
             </el-table-column>
-            <el-table-column
-                    prop="logText"
-                    label="正文"
-                    width="800">
-            </el-table-column>
+<!--            -->
+<!--            <el-table-column-->
+<!--                    prop="logText"-->
+<!--                    label="正文"-->
+<!--                    width="800">-->
+<!--            </el-table-column>-->
+
             <el-table-column
                     label="隐私性"
-                    width="100">
+                    width="200">
                 <template slot-scope="scope">
                     <div slot="reference" class="name-wrapper">
                         <el-tag size="medium">{{ scope.row.visible ? '公开' : '私有' }}</el-tag>
                     </div>
                 </template>
             </el-table-column>
-
             <el-table-column
                     label="操作"
-                    width="100"
-                    fixed="right">
+                    width="200">
                 <template slot-scope="scope">
+                    <el-button @click="showDetail(scope.row)" type="text" size="small">查看</el-button>
                     <el-button @click="handleEdit(scope.row.id)" type="text" size="small">编辑</el-button>
                     <el-button @click="handleDelete(scope.row.id)" type="text" size="small">删除</el-button>
                 </template>
@@ -95,9 +96,13 @@
             <el-col :span="8" style="height: 32px">
 
             </el-col>
-
         </el-row>
 
+        <el-dialog title= "消费详情" :visible.sync="dialogFormVisible">
+            <h1>{{tmpData.title}}</h1>
+            <br/>
+            {{tmpData.logText}}
+        </el-dialog>
     </template>
 </div>
 
@@ -109,12 +114,12 @@
             return {
                 tableData: [],
                 searchName:'',
-
-
+                tmpData:{},
                 input: '', // 输入跳转到哪一页
                 counts: 0, // 总共多少数据
                 page: 1,// 当前是多少页
                 pageSize: 5, // 每页多少数据，
+                dialogFormVisible:false,
 
             }
         },
@@ -148,6 +153,11 @@
                         }
                     })
                 })
+            },
+
+            showDetail(row){
+                this.dialogFormVisible = true;
+                this.tmpData = row;
             },
 
             handleSizeChange (val) {

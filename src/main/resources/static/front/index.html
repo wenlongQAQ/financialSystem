@@ -11,7 +11,7 @@
     <script src="assert/js/axios.js"></script>
 
 </head>
-<body>
+<body class="bkImage">
 <div id="root" style="height: 100%" >
     <el-container>
         <el-header>
@@ -56,6 +56,7 @@
                             <el-menu-item index="2-2" @click="changeIframe('income/addIncome.html')">新增收入</el-menu-item>
                             <el-menu-item index="2-3" @click="changeIframe('income/dayIncome.html')">收入日报</el-menu-item>
                     </el-submenu>
+
                     <el-submenu index="3">
                         <template slot="title">
                             <i class="el-icon-menu"></i>
@@ -65,6 +66,12 @@
                         <el-menu-item index="3-2" @click="changeIframe('expend/addExpend.html')">新增消费</el-menu-item>
                         <el-menu-item index="3-3" @click="changeIframe('expend/dayExpend.html')">支出日报</el-menu-item>
                     </el-submenu>
+                    <el-menu-item index="8"  @click="changeIframe('orderType.html')">
+                        <template slot="title">
+                            <i class="el-icon-menu"></i>
+                            <span slot="title">收支类型</span>
+                        </template>
+                    </el-menu-item>
 
                     <el-submenu index="4">
                         <template slot="title">
@@ -226,23 +233,22 @@
             // TODO 根据不同的权限显示不同的菜单
             if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
                 this.iframeUrl = sessionStorage.getItem('history');
-                console.log(sessionStorage.getItem('history'));
-                console.log(this.iframeUrl);
             }
+
             var _this = this;
+
             if(sessionStorage.getItem("user_identity") == 1){
                 _this.iframeUrl = "changePassword.html";
             }else if(sessionStorage.getItem("user_identity") == 0){
                 if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
                     this.iframeUrl = sessionStorage.getItem('history');
-                    console.log(sessionStorage.getItem('history'));
-                    console.log(this.iframeUrl);
                 }else{
                     _this.iframeUrl = "personManager.html";
                 }
             }else{
                 _this.iframeUrl = "login.html";
             }
+
             setInterval(function () {
                 _this.identity = sessionStorage.getItem("user_identity");
                 _this.name = _this.identity == 1? '管理员' : sessionStorage.getItem('name');

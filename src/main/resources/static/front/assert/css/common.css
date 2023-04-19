@@ -3,6 +3,18 @@ html,body{
     width: 100%;
     position: absolute;
 }
+
+ .bkImage{
+     /*background-image: url("../images/4d3ea53c084bad6931a56d5158a48jpeg.jpeg");*/
+     /*background-size : 1800px  1200px;*/
+     /*background-repeat: no-repeat;*/
+ }
+ .loginBKImage{
+     background-image: url("../images/4d3ea53c084bad6931a56d5158a48jpeg.jpeg");
+     background-size : 1800px  1200px;
+     background-repeat: no-repeat;
+ }
+
 .el-header
 {
     padding: 0;

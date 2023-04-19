@@ -12,7 +12,7 @@
     <script src="assert/js/order.js"></script>
     <script src="assert/js/advice.js"></script>
 </head>
-<body>
+<body class="bkImage">
 <div id="root" width>
     <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
         <div style="margin: 20px;width: 100px;height: 20px">
@@ -125,54 +125,54 @@
         ></el-pagination>
 
 
-        <el-dialog title=消费详情" :visible.sync="dialogFormVisible">
-            <el-form :model="form"  :rules="rules"  ref="form">
-                <el-form-item label="消费名称" :label-width="formLabelWidth" prop="nameRequired">
-                    <el-input v-model="form.orderName" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="日期" :label-width="formLabelWidth" prop="dateRequired">
-                    <el-date-picker
-                            v-model="form.orderTime"
-                            type="date"
-                            placeholder="选择订单日期">
-                    </el-date-picker>
-                </el-form-item>
-                <el-form-item label="备注" :label-width="formLabelWidth">
-                    <el-input v-model="form.comment" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="金额" :label-width="formLabelWidth" prop="orderMoney">
-                    <el-input v-model="form.orderMoney" autocomplete="off"></el-input>
-                </el-form-item>
-                <el-form-item label="请选择收入类型" prop="dataRequired">
-                    <template>
-                        <el-select v-model="form.orderTypeId" filterable placeholder="请选择">
-                            <el-option
-                                    v-for="item in orderType"
-                                    :label="item.name"
-                                    :value="item.id">
-                            </el-option>
-                        </el-select>
-                    </template>
-                </el-form-item>
-                <el-form-item label="账单详情" :label-width="formLabelWidth">
-                    <el-upload
-                            class="avatar-uploader"
-                            action="/common/uploadImg"
-                            :show-file-list="false"
-                            :on-success="handleAvatarSuccess"
-                            :before-upload="beforeAvatarUpload"
-                            ref="uploadImg"
-                    >
-                        <img v-if="imageUrl" :src="imageUrl" class="avatar">
-                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-                    </el-upload>
-                </el-form-item>
-            </el-form>
-            <div slot="footer" class="dialog-footer">
-                <el-button @click="dialogFormVisible = false">取 消</el-button>
-                <el-button type="primary" @click="confirmAdd('form')">确 定</el-button>
-            </div>
-        </el-dialog>
+<!--        <el-dialog title=消费详情" :visible.sync="dialogFormVisible">-->
+<!--            <el-form :model="form"  :rules="rules"  ref="form">-->
+<!--                <el-form-item label="消费名称" :label-width="formLabelWidth" prop="nameRequired">-->
+<!--                    <el-input v-model="form.orderName" autocomplete="off"></el-input>-->
+<!--                </el-form-item>-->
+<!--                <el-form-item label="日期" :label-width="formLabelWidth" prop="dateRequired">-->
+<!--                    <el-date-picker-->
+<!--                            v-model="form.orderTime"-->
+<!--                            type="date"-->
+<!--                            placeholder="选择订单日期">-->
+<!--                    </el-date-picker>-->
+<!--                </el-form-item>-->
+<!--                <el-form-item label="备注" :label-width="formLabelWidth">-->
+<!--                    <el-input v-model="form.comment" autocomplete="off"></el-input>-->
+<!--                </el-form-item>-->
+<!--                <el-form-item label="金额" :label-width="formLabelWidth" prop="orderMoney">-->
+<!--                    <el-input v-model="form.orderMoney" autocomplete="off"></el-input>-->
+<!--                </el-form-item>-->
+<!--                <el-form-item label="请选择收入类型" prop="dataRequired">-->
+<!--                    <template>-->
+<!--                        <el-select v-model="form.orderTypeId" filterable placeholder="请选择">-->
+<!--                            <el-option-->
+<!--                                    v-for="item in orderType"-->
+<!--                                    :label="item.name"-->
+<!--                                    :value="item.id">-->
+<!--                            </el-option>-->
+<!--                        </el-select>-->
+<!--                    </template>-->
+<!--                </el-form-item>-->
+<!--                <el-form-item label="账单详情" :label-width="formLabelWidth">-->
+<!--                    <el-upload-->
+<!--                            class="avatar-uploader"-->
+<!--                            action="/common/uploadImg"-->
+<!--                            :show-file-list="false"-->
+<!--                            :on-success="handleAvatarSuccess"-->
+<!--                            :before-upload="beforeAvatarUpload"-->
+<!--                            ref="uploadImg"-->
+<!--                    >-->
+<!--                        <img v-if="imageUrl" :src="imageUrl" class="avatar">-->
+<!--                        <i v-else class="el-icon-plus avatar-uploader-icon"></i>-->
+<!--                    </el-upload>-->
+<!--                </el-form-item>-->
+<!--            </el-form>-->
+<!--            <div slot="footer" class="dialog-footer">-->
+<!--                <el-button @click="dialogFormVisible = false">取 消</el-button>-->
+<!--                <el-button type="primary" @click="confirmAdd('form')">确 定</el-button>-->
+<!--            </div>-->
+<!--        </el-dialog>-->
     </template>
 
 

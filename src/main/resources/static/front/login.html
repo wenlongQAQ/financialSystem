@@ -30,26 +30,35 @@
     }
   </style>
 </head>
-<body>
+<body class="loginBKImage">
 <div id="root"  >
   <div class="form1">
     <div class="title-font">个人财务管理系统</div>
     <el-form label-width="80px" :model="loginTable" size="medium"  >
-      <el-form-item label="账号：">
+      <el-form-item>
+          <span slot="label" style="color: #28384f">
+                账号：
+               </span>
         <el-col :span="24" icon="el-icon-lock">
             <el-input   v-model="loginTable.username" prefix-icon="el-icon-user" ></el-input>
         </el-col>
       </el-form-item>
 
-      <el-form-item label="密码：" >
+      <el-form-item  >
+          <span slot="label" style="color: #28384f">
+                密码：
+          </span>
         <el-col :span="24">
-          <el-input v-model="loginTable.password" prefix-icon="el-icon-lock" ></el-input>
+          <el-input v-model="loginTable.password" prefix-icon="el-icon-lock" type="password" auto-complete="off"></el-input>
         </el-col>
       </el-form-item>
-      <el-form-item label="身份：" >
+      <el-form-item  >
+          <span slot="label" style="color: #28384f">
+                身份：
+               </span>
         <el-col :span="24">
-          <el-radio v-model="loginTable.identity" label="0">普通用户</el-radio>
-          <el-radio v-model="loginTable.identity" label="1">管理员</el-radio>
+          <el-radio v-model="loginTable.identity" label="0" style="color: #28384f">普通用户</el-radio>
+          <el-radio v-model="loginTable.identity" label="1" style="color: #28384f;">管理员</el-radio>
         </el-col>
       </el-form-item>
     </el-form>
@@ -85,7 +94,7 @@
                     if (resp.data.code === 20001) {
                       _this.$message.success(resp.data.msg||'登录成功');
                       if(_this.loginTable.identity == 0){
-                        window.location.href= "personManager.html";
+                        window.location.href= "welcome.html";
                       }else{
                         window.location.href= "changePassword.html";
                       }
