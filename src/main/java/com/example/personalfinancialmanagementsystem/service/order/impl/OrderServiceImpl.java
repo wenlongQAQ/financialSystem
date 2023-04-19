@@ -6,6 +6,7 @@ import com.example.personalfinancialmanagementsystem.mapper.order.OrderMapper;
 import com.example.personalfinancialmanagementsystem.pojo.order.DayOrder;
 import com.example.personalfinancialmanagementsystem.pojo.order.Order;
 import com.example.personalfinancialmanagementsystem.service.order.OrderService;
+import com.example.personalfinancialmanagementsystem.util.GetDateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -72,22 +73,22 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
 
     @Override
     public List<String> getWarningList(String userId) {
-//        List<List> incomes = this.getAllMonthMoney(1, userId);
-//        List<List> expends = this.getAllMonthMoney(0, userId);
-//        List<String > warningList = new ArrayList<>();
-//        for (List expend : expends) {
-//            String expendMonth = (String) expend.get(0);
-//            Double expendMoney = Double.valueOf(expend.get(1).toString());
-//            for (List income : incomes) {
-//                String incomeMonth = (String) income.get(0);
-//                Double incomeMoney = Double.valueOf(income.get(1).toString());
-//                if (incomeMonth.equals(expendMonth) && incomeMoney < expendMoney){
-//                    warningList.add(expendMonth);
-//                    break;
-//                }
-//            }
-//        }
-        return null;
+        List<List> incomes = this.getAllMonthMoney(1, userId, new java.sql.Date(GetDateUtil.getCurrYearFirst().getTime()), new java.sql.Date(GetDateUtil.getCurrYearLast().getTime()));
+        List<List> expends = this.getAllMonthMoney(0, userId, new java.sql.Date(GetDateUtil.getCurrYearFirst().getTime()), new java.sql.Date(GetDateUtil.getCurrYearLast().getTime()));
+        List<String > warningList = new ArrayList<>();
+        for (List expend : expends) {
+            String expendMonth = (String) expend.get(0);
+            Double expendMoney = Double.valueOf(expend.get(1).toString());
+            for (List income : incomes) {
+                String incomeMonth = (String) income.get(0);
+                Double incomeMoney = Double.valueOf(income.get(1).toString());
+                if (incomeMonth.equals(expendMonth) && incomeMoney < expendMoney){
+                    warningList.add(expendMonth);
+                    break;
+                }
+            }
+        }
+        return warningList;
     }
 
     @Override

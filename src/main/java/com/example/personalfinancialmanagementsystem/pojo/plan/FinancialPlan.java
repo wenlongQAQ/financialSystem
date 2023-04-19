@@ -14,7 +14,7 @@ public class FinancialPlan {
     private Double planMoney;
     private String detail;
     private String comment;
-    @TableField(fill = FieldFill.INSERT)
+
     private Date saveTime;
     private Date endTime;
 

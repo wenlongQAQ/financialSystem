@@ -10,6 +10,7 @@
     <script src="./assert/element-ui/lib/index.js"></script>
     <script src="assert/js/axios.js"></script>
     <script src="assert/js/order.js"></script>
+    <script src="assert/js/advice.js"></script>
 </head>
 <body>
 <div id="root" width>
@@ -406,6 +407,18 @@
                 let s = date.getSeconds();
                 s = s < 10 ? ('0' + s) : s;
                 return y + '-' + MM + '-' + d ;
+            },
+            getRecentAdvice(){
+                var _this = this;
+                getAdvice(sessionStorage.getItem('user'),'recent').then(resp => {
+                    for(let i = 0; i < 3;i++){
+                        _this.$notify.info({
+                            title: resp.data.data[i].title,
+                            message: resp.data.data[i].text,
+                            duration: 0
+                        });
+                    }
+                })
             }
         },
         created(){

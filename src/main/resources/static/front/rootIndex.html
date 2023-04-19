@@ -33,80 +33,11 @@
         <el-container>
             <el-aside width="10%">
                 <el-menu
-                        default-active="2"
-                        class="el-menu-vertical-demo"
-                        text-color="white"
-                        background-color="transparent"
-                        @open="handleOpen"
-                        @close="handleClose"
-                        v-if="identity!=1"
-                >
-                    <el-menu-item index="1">
-                        <template slot="title">
-                            <i class="el-icon-location"></i>
-                            <span @click="changeIframe('personManager.html')">个人中心</span>
-                        </template>
-                    </el-menu-item>
-                    <el-submenu index="2">
-                        <template slot="title">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title">收入管理</span>
-                        </template>
-                            <el-menu-item index="2-1" @click="changeIframe('income.html')"  >收入总览</el-menu-item>
-                            <el-menu-item index="2-2" @click="changeIframe('income/addIncome.html')">新增收入</el-menu-item>
-                            <el-menu-item index="2-3" @click="changeIframe('income/dayIncome.html')">收入日报</el-menu-item>
-                    </el-submenu>
-                    <el-submenu index="3">
-                        <template slot="title">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title">消费管理</span>
-                        </template>
-                        <el-menu-item index="3-1" @click="changeIframe('expend.html')" >消费总览</el-menu-item>
-                        <el-menu-item index="3-2" @click="changeIframe('expend/addExpend.html')">新增消费</el-menu-item>
-                        <el-menu-item index="3-3" @click="changeIframe('expend/dayExpend.html')">支出日报</el-menu-item>
-                    </el-submenu>
-
-                    <el-submenu index="4">
-                        <template slot="title">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title">理财计划</span>
-                        </template>
-                        <el-menu-item index="4-1" @click="changeIframe('plan/allPlan.html')" >计划总览</el-menu-item>
-                        <el-menu-item index="4-2" @click="changeIframe('plan/addPlan.html')">新增计划</el-menu-item>
-                    </el-submenu>
-                    <el-submenu index="5">
-                        <template slot="title">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title">理财日志</span>
-                        </template>
-                        <el-menu-item index="5-1" @click="changeIframe('financial-log/myLog.html')">我的日志</el-menu-item>
-                        <el-menu-item index="5-2" @click="changeIframe('financial-log/public_log.html')">公开日志</el-menu-item>
-                        <el-menu-item index="5-3" @click="changeIframe('financial-log/addLog.html')">编写日志</el-menu-item>
-                    </el-submenu>
-
-
-                    <el-menu-item index="6" @click="changeIframe('financialStatement.html')">
-                        <template slot="title">
-                            <i class="el-icon-view"></i>
-                            <span slot="title" @click="changeIframe('advice/allAdvice.html')">财务报表</span>
-                        </template>
-                    </el-menu-item>
-
-                    <el-menu-item index="7">
-                        <template slot="title">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title" @click="changeIframe('advice/allAdvice.html')">理财建议</span>
-                        </template>
-                    </el-menu-item>
-                </el-menu>
-
-                <el-menu
                         :unique-opened="false"
                         :collapse-transition="false"
                         background-color="transparent"
                         text-color="white"
                         active-text-color="red"
-                        v-else
                 >
                     <div v-for="item in rootMenuList" :key="item.id">
                         <el-menu-item  :index="item.id" @click="menuHandle(item,false)">
@@ -149,24 +80,15 @@
                     },
                     {
                         id: '2',
-                        name: '用户管理/提出建议',
+                        name: '用户管理',
                         url: 'userManager.html',
                         icon: 'el-icon-warning'
                     },
                     {
                         id:'3',
                         name:'日志管理',
-                        url:'financial-log/logManage.html',
-                        icon:'el-icon-s-comment'
+                        url:'logManage.html'
                     },
-                    {
-                        id:'4',
-                        name:'理财建议管理',
-                        url:'advice/allAdvice.html',
-                        icon:'el-icon-chat-line-square'
-
-                    }
-
                 ],
                 menuList:[],
             }
@@ -181,11 +103,12 @@
                 axios.put("/user/loginOut?userId="+userId).then(function (resp) {
                     if (resp.data.code===50001){
                         _this.$message.success(resp.data.msg);
+                        window.location.href='index.html';
                         _this.iframeUrl = "login.html";
                         sessionStorage.removeItem('user');
                         sessionStorage.removeItem('imageName');
                         sessionStorage.removeItem('name');
-                        sessionStorage.removeItem('user_identity')
+                        sessionStorage.removeItem('user_identity');
                         location.reload();
                     }else {
                         _this.$message.error(resp.data.msg);
@@ -202,16 +125,6 @@
                 }else {
                     this.iframeUrl = 'login.html';
                 }
-
-            },
-            changeIframe(url){
-                if(sessionStorage.getItem('user')!=null){
-                    this.iframeUrl = url;
-                    sessionStorage.setItem('history',url);
-                }else{
-                    this.iframeUrl = "login.html";
-                }
-
             },
             handleOpen(key, keyPath) {
                 console.log(key, keyPath);
@@ -226,8 +139,6 @@
             // TODO 根据不同的权限显示不同的菜单
             if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
                 this.iframeUrl = sessionStorage.getItem('history');
-                console.log(sessionStorage.getItem('history'));
-                console.log(this.iframeUrl);
             }
             var _this = this;
             if(sessionStorage.getItem("user_identity") == 1){
@@ -244,13 +155,11 @@
                 _this.iframeUrl = "login.html";
             }
             setInterval(function () {
-                _this.identity = sessionStorage.getItem("user_identity");
-                _this.name = _this.identity == 1? '管理员' : sessionStorage.getItem('name');
-                _this.imageName =_this.identity == 1 ? 'root' : sessionStorage.getItem('imageName');
+                this.identity = sessionStorage.getItem("user_identity");
+                let identity = sessionStorage.getItem("user_identity");
+                _this.name = identity == 1? '管理员' : sessionStorage.getItem('name');
+                _this.imageName =identity == 1 ? 'root' : sessionStorage.getItem('imageName');
                 _this.getImage();
-            },1000)
-            setInterval(function (){
-
             },1000)
         }
 

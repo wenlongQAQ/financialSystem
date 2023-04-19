@@ -190,7 +190,7 @@
             <el-button type="primary" @click="confirmEdit('form')">确 定</el-button>
         </div>
     </el-dialog>
-    <el-dialog title="收支管理"
+    <el-dialog title="收支报表"
                :visible.sync="detailFormVisible"
                :@opened="open()"
     >
@@ -198,7 +198,8 @@
         </div>
         <div slot="footer" class="dialog-footer">
             <el-button @click="detailFormVisible = false">取 消</el-button>
-            <el-button type="primary" @click="detailFormVisible = false">确 定</el-button>
+            <el-button type="success" @click="detailFormVisible = false">确 定</el-button>
+            <el-button type="primary" @click="financialAdvice()">理财建议</el-button>
         </div>
     </el-dialog>
 
@@ -261,6 +262,8 @@
                 detailFormVisible:false,
                 dialogFormVisible:false,
                 formLabelWidth:'120px',
+                //
+                tmpUserId:'',
                 //校验参数
                 rules: {
                     age:[
@@ -393,11 +396,13 @@
 
 
 
+
             // 收入支出情况查询
             open(){
             },
             showDetail(type ,id){
                 this.detailFormVisible = true;
+                this.tmpUserId = id;
                 var _this = this;
                 var timer = setInterval(function () {
                     _this.showErChart(type,id);
@@ -438,9 +443,10 @@
 
                 };
                 myChart.setOption(option1);
-                axios.get("/order/moneyList?type="+1+"&userId="+id).then(function (resp){
+
+                axios.get("/order/moneyList?type="+1+"&userId="+id+"&begin="+new Date(new Date().getFullYear(), 0).getTime()+"&end="+new Date().getTime() ).then(function (resp){
                     _this.dataList = resp.data.data;
-                    axios.get("/order/moneyList?type="+0+"&userId="+id).then(function (resp) {
+                    axios.get("/order/moneyList?type="+0+"&userId="+id+"&begin="+new Date(new Date().getFullYear(), 0).getTime()+"&end="+new Date().getTime()).then(function (resp) {
                         myChart.setOption({
                             series: [
                                 {
@@ -466,7 +472,11 @@
 
                     })
                 })
-            }
+            },
+            // 理财建议
+            financialAdvice(){
+                window.location.href='advice/addAdvice.html?id='+this.tmpUserId;
+            },
 
 
 

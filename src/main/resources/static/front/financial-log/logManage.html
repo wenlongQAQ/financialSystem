@@ -6,7 +6,7 @@
     <script src="../assert/js/vue.js"></script>
     <link rel="stylesheet" href="../assert/element-ui/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="../assert/css/common.css">
-    <link rel="stylesheet" href="../assert/common/upload.css">
+    <link rel="stylesheet" href="../common/upload.css">
     <script src="../assert/element-ui/lib/index.js"></script>
     <script src="../assert/js/axios.js"></script>
     <script src="../assert/js/order.js"></script>
@@ -15,84 +15,76 @@
 <div id="logRoot">
     <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
         <div style="margin: 20px;width: 100px;height: 20px">
-            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>理财计划
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>日志管理
         </div>
     </div>
-    <el-col :span="2" style="height: 10px">
-
-    </el-col>
-    <el-col :span="3">
-        <el-input v-model="searchName" placeholder="请输入计划名称"></el-input>
-    </el-col>
-    <el-col :span="2">
-        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>
-    </el-col>
     <el-col :span="4">
-        <el-button @click="handleDelete('批量', null)" type="danger">批量删除</el-button>
+        <el-input v-model="searchName" placeholder="请输入名称"></el-input>
+    </el-col>
+    <el-col :span="8">
+        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>
     </el-col>
     <template>
         <el-table
                 :data="tableData"
-                style="width: 100%"
-                @selection-change="handleSelectionChange"
-                ref="selectionTable"
-        >
-            <el-table-column
-                    type="selection"
-                    width="80">
-            </el-table-column>
-            <el-table-column
-                    type="index"
-                    width="80"
-                    label="序号">
-            </el-table-column>
+                style="width: 100%">
             <el-table-column
                     label="创建日期"
-                    width="180"
-            >
+                    width="180">
                 <template slot-scope="scope">
-                    {{timestampToTime(scope.row.saveTime)}}
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.saveTime.join('-') }}</el-tag>
+                    </div>
                 </template>
             </el-table-column>
             <el-table-column
-                    label="截止日期"
-                    width="180"
-            >
+                    label="更新日期"
+                    width="180">
                 <template slot-scope="scope">
-                    {{timestampToTime(scope.row.endTime)}}
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.updateTime != null ? scope.row.updateTime.join('-') : scope.row.saveTime.join('-')  }}</el-tag>
+                    </div>
                 </template>
-
             </el-table-column>
-
             <el-table-column
-                    prop="planName"
-                    label="计划名称"
+                    prop="userName"
+                    label="发布者"
                     width="180">
             </el-table-column>
             <el-table-column
-                    prop="detail"
-                    label="明细"
+                    prop="title"
+                    label="标题"
                     width="180">
             </el-table-column>
             <el-table-column
-                    label="金额"
-                    width="180"
-                    prop="planMoney"
-            >
+                    prop="logText"
+                    label="正文"
+                    width="500">
             </el-table-column>
 
             <el-table-column
-                    label="操作"
-                    width="180"
-            >
+                    label="隐私性"
+                    width="100">
                 <template slot-scope="scope">
-                    <el-button @click="handleEdit(scope.row.id)" type="text" size="small">编辑</el-button>
-                    <el-button @click="handleDelete('单删',scope.row.id)" type="text" size="small">删除</el-button>
+                    <div slot="reference" class="name-wrapper">
+                        <el-tag size="medium">{{ scope.row.visible ? '公开' : '私有' }}</el-tag>
+                    </div>
                 </template>
             </el-table-column>
+
+                        <el-table-column
+                                label="操作"
+                                width="40"
+                                fixed="right">
+                            <template slot-scope="scope">
+<!--                                <el-button @click="handleEdit(scope.row.id)" type="text" size="small">查看</el-button>-->
+                                <el-button @click="handleDelete(scope.row.id)" type="text" size="small">删除</el-button>
+                            </template>
+                        </el-table-column>
         </el-table>
         <el-row>
             <el-col :span="8" style="height: 32px">
+
             </el-col>
             <el-col :span="8">
                 <el-pagination
@@ -123,18 +115,18 @@
                 tableData: [],
                 searchName:'',
 
+
                 input: '', // 输入跳转到哪一页
                 counts: 0, // 总共多少数据
                 page: 1,// 当前是多少页
                 pageSize: 5, // 每页多少数据，
-                checkList:'', // 多选
 
             }
         },
         methods:{
             initPage(){
                 var _this = this;
-                axios.get("/plan/page?page="+this.page+"&pageSize="+this.pageSize+"&searchName="+this.searchName+"&id="+sessionStorage.getItem('user')).then(function (resp) {
+                axios.get("/financial/pageSelf?page="+this.page+"&pageSize="+this.pageSize+"&searchName="+this.searchName+"&id="+'root').then(function (resp) {
                     if(resp.data.code === 10001){
                         _this.tableData = resp.data.data.records;
                         _this.counts = resp.data.data.total;
@@ -144,27 +136,21 @@
                 })
             },
             handleEdit(id){
-                window.location.href='editPlan.html?id='+id;
+                window.location.href='editLog.html?id='+id;
             },
-            handleDelete(type,id) {
-                if (type === '批量' && id === null) {
-                    if (this.checkList.length === 0) {
-                        return this.$message.error('请选择删除对象')
-                    }
-                }
-                this.$confirm('确认删除该记录, 是否继续?', '确定删除', {
+            handleDelete(id){
+                var _this = this;
+                this.$confirm('确认删除该日志, 是否继续?', '确定删除', {
                     'confirmButtonText': '确定',
                     'cancelButtonText': '取消',
                 }).then(() => {
-                    axios.delete("/plan?ids="+ (type ==='批量' ? this.checkList.join(",") : id)).then(res => {
-                        if (res.data.code === 50001) {
-                            this.$message.success('删除成功！')
-                            this.initPage();
-                        } else {
-                            this.$message.error( '操作失败')
+                    axios.delete("/financial?id="+id).then(function (resp){
+                        if(resp.data.code === 50001){
+                            _this.$message.success(resp.data.msg || '删除成功');
+                            _this.initPage();
+                        }else{
+                            _this.$message.error(resp.data.msg || '删除失败');
                         }
-                    }).catch(err => {
-                        this.$message.error('请求出错了：' + err)
                     })
                 })
             },
@@ -177,29 +163,6 @@
                 this.page = val
                 this.initPage()
             },
-
-
-            handleSelectionChange(val) {
-                let checkArr = []
-                val.forEach((n) => {
-                    checkArr.push(n.id)
-                })
-                this.checkList = checkArr
-            },
-
-
-            timestampToTime(timestamp) {
-                // 时间戳为10位需*1000，时间戳为13位不需乘1000
-                var date = new Date(timestamp);
-                var Y = date.getFullYear() + "-";
-                var M =
-                        (date.getMonth() + 1 < 10
-                                ? "0" + (date.getMonth() + 1)
-                                : date.getMonth() + 1) + "-";
-                var D = (date.getDate() < 10 ? "0" + date.getDate() : date.getDate()) + " ";
-
-                return Y + M + D ;
-            }
         },
         created(){
             this.initPage();

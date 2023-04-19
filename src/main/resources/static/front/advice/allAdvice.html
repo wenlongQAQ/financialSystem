@@ -10,23 +10,24 @@
     <script src="../assert/element-ui/lib/index.js"></script>
     <script src="../assert/js/axios.js"></script>
     <script src="../assert/js/order.js"></script>
+    <script src="../assert/js/advice.js"></script>
 </head>
 <body>
 <div id="logRoot">
     <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
         <div style="margin: 20px;width: 100px;height: 20px">
-            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>理财计划
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>理财建议
         </div>
     </div>
     <el-col :span="2" style="height: 10px">
 
     </el-col>
-    <el-col :span="3">
-        <el-input v-model="searchName" placeholder="请输入计划名称"></el-input>
-    </el-col>
-    <el-col :span="2">
-        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>
-    </el-col>
+<!--    <el-col :span="3">-->
+<!--        <el-input v-model="searchName" placeholder="请输入计划名称"></el-input>-->
+<!--    </el-col>-->
+<!--    <el-col :span="2">-->
+<!--        <el-button type="primary" icon="el-icon-search" @click = "initPage()">搜索</el-button>-->
+<!--    </el-col>-->
     <el-col :span="4">
         <el-button @click="handleDelete('批量', null)" type="danger">批量删除</el-button>
     </el-col>
@@ -39,45 +40,28 @@
         >
             <el-table-column
                     type="selection"
-                    width="80">
+                    width="180">
             </el-table-column>
             <el-table-column
                     type="index"
-                    width="80"
+                    width="180"
                     label="序号">
             </el-table-column>
             <el-table-column
-                    label="创建日期"
+                prop="title"
+                label="标题"
+                width="300">
+            </el-table-column>
+            <el-table-column
+                prop="text"
+                label="正文"
+                width="400">
+            </el-table-column>
+            <el-table-column
+                    label="所属用户"
                     width="180"
-            >
-                <template slot-scope="scope">
-                    {{timestampToTime(scope.row.saveTime)}}
-                </template>
-            </el-table-column>
-            <el-table-column
-                    label="截止日期"
-                    width="180"
-            >
-                <template slot-scope="scope">
-                    {{timestampToTime(scope.row.endTime)}}
-                </template>
-
-            </el-table-column>
-
-            <el-table-column
-                    prop="planName"
-                    label="计划名称"
-                    width="180">
-            </el-table-column>
-            <el-table-column
-                    prop="detail"
-                    label="明细"
-                    width="180">
-            </el-table-column>
-            <el-table-column
-                    label="金额"
-                    width="180"
-                    prop="planMoney"
+                    prop="userName"
+                    v-if="identity==1"
             >
             </el-table-column>
 
@@ -86,7 +70,7 @@
                     width="180"
             >
                 <template slot-scope="scope">
-                    <el-button @click="handleEdit(scope.row.id)" type="text" size="small">编辑</el-button>
+<!--                    <el-button @click="handleEdit(scope.row.id)" type="text" size="small">编辑</el-button>-->
                     <el-button @click="handleDelete('单删',scope.row.id)" type="text" size="small">删除</el-button>
                 </template>
             </el-table-column>
@@ -122,7 +106,7 @@
             return {
                 tableData: [],
                 searchName:'',
-
+                identity:'',
                 input: '', // 输入跳转到哪一页
                 counts: 0, // 总共多少数据
                 page: 1,// 当前是多少页
@@ -134,7 +118,7 @@
         methods:{
             initPage(){
                 var _this = this;
-                axios.get("/plan/page?page="+this.page+"&pageSize="+this.pageSize+"&searchName="+this.searchName+"&id="+sessionStorage.getItem('user')).then(function (resp) {
+                getAdvicePage( sessionStorage.getItem('user_identity') == 1 ? 'root' : sessionStorage.getItem('user'),this.page,this.pageSize).then((resp) => {
                     if(resp.data.code === 10001){
                         _this.tableData = resp.data.data.records;
                         _this.counts = resp.data.data.total;
@@ -143,9 +127,7 @@
                     }
                 })
             },
-            handleEdit(id){
-                window.location.href='editPlan.html?id='+id;
-            },
+
             handleDelete(type,id) {
                 if (type === '批量' && id === null) {
                     if (this.checkList.length === 0) {
@@ -156,7 +138,7 @@
                     'confirmButtonText': '确定',
                     'cancelButtonText': '取消',
                 }).then(() => {
-                    axios.delete("/plan?ids="+ (type ==='批量' ? this.checkList.join(",") : id)).then(res => {
+                    axios.delete("/advice?ids="+ (type ==='批量' ? this.checkList.join(",") : id)).then(res => {
                         if (res.data.code === 50001) {
                             this.$message.success('删除成功！')
                             this.initPage();
@@ -198,11 +180,12 @@
                                 : date.getMonth() + 1) + "-";
                 var D = (date.getDate() < 10 ? "0" + date.getDate() : date.getDate()) + " ";
 
-                return Y + M + D ;
+                return Y + M + D;
             }
         },
         created(){
             this.initPage();
+            this.identity = sessionStorage.getItem('user_identity');
         }
     })
 </script>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../assert/js/vue.js"></script>
+    <link rel="stylesheet" href="../assert/element-ui/lib/theme-chalk/index.css">
+    <link rel="stylesheet" href="../assert/css/common.css">
+    <link rel="stylesheet" href="../assert/common/upload.css">
+    <script src="../assert/element-ui/lib/index.js"></script>
+    <script src="../assert/js/axios.js"></script>
+    <script src="../assert/js/order.js"></script>
+</head>
+<body>
+<div id="root">
+    <div style="margin-top: 20px;margin-bottom:20px;background-color: white;width: auto;height: 20px;">
+        <div style="margin: 20px;width: 100px;height: 20px">
+            <i class="el-icon-s-finance" style="margin-left: 10px;margin-right: 10px"></i>新增理财计划
+        </div>
+    </div>
+    <el-form :model="form" ref="form"  style="margin: 0 auto" >
+        <el-row>
+            <el-col :span="8">
+                <el-form-item label="计划名称" :label-width="formLabelWidth" >
+                    <el-input v-model="form.planName" autocomplete="off" ></el-input>
+                </el-form-item>
+            </el-col>
+        </el-row>
+
+
+        <el-form-item label="截止日期" :label-width="formLabelWidth" >
+            <el-date-picker
+                    v-model="form.endTime"
+                    type="date"
+                    placeholder="选择日期"
+                    format="yyyy 年 MM 月 dd 日">
+            </el-date-picker>
+        </el-form-item>
+        <el-row>
+            <el-col :span="8">
+                <el-form-item label="明细" :label-width="formLabelWidth">
+                    <el-input v-model="form.detail" autocomplete="off" ></el-input>
+                </el-form-item>
+            </el-col>
+        </el-row>
+        <el-row>
+            <el-col :span="4">
+                <el-form-item label="金额" :label-width="formLabelWidth">
+                    <el-input v-model="form.planMoney" autocomplete="off" ></el-input>
+                </el-form-item>
+            </el-col>
+        </el-row>
+
+    </el-form>
+    <el-row>
+        <el-col :span="5" style="height: 32px"></el-col>
+        <el-col :span="5" >
+            <el-button @click="clearDialog()">清空</el-button>
+            <el-button type="primary" @click="confirmEdit()">确 定</el-button>
+        </el-col>
+        <el-col :span="4" style="height: 32px"></el-col>
+        <el-col :span="4" style="height: 32px"></el-col>
+
+    </el-row>
+
+</div>
+
+<script>
+    const x = new Vue({
+        el: '#root',
+        data(){
+            return{
+                formLabelWidth:'120px',
+                form:{},
+                id:'',
+
+            }
+        },
+        methods:{
+            // goBack(){
+            //     window.location.href='allPlan.html';
+            // },
+            // getFormData(){
+            //     var _this = this;
+            //     axios.get("/plan/getOne?id="+this.id).then(function (resp) {
+            //         if(resp.data.code === 10001){
+            //             _this.form = resp.data.data;
+            //         }else{
+            //             _this.$message.error(resp.data.msg || '接口错误')
+            //         }
+            //
+            //     })
+            // },
+            confirmEdit(){
+                var _this = this;
+                this.form.userId=sessionStorage.getItem('user');
+                axios.put("/plan",this.form).then(function (resp) {
+                    if(resp.data.code === 50001){
+                        _this.$message.success(resp.data.msg || '新增成功');
+                        _this.getFormData();
+                    }else{
+                        _this.$message.error(resp.data.msg || '接口错误')
+                    }
+                })
+            },
+            clearDialog(){
+                this.form = {};
+            },
+            // getUrlSearchParams(){
+            //     let str = window.location.search;
+            //     let arr = str.split("=");
+            //
+            //     this.id = arr[1];
+            // },
+
+        },
+        created(){
+        },
+        mounted(){
+            this.getUrlSearchParams();
+            this.getFormData();
+        }
+
+    })
+</script>
+
+</body>
+</html>

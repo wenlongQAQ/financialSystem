@@ -9,6 +9,7 @@ import com.example.personalfinancialmanagementsystem.service.plan.FinancialPlanS
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,16 @@ public class PlanController {
     @DeleteMapping
     public R deletePlanBatch(@RequestParam  ArrayList<Integer> ids){
         financialPlanService.removeByIds(ids);
+        return R.sendMessage("","",Code.EDIT_SUCCESS);
+    }
+    @GetMapping("/getOne")
+    public R getById(@RequestParam("id") String id){
+        return R.sendMessage(financialPlanService.getById(id),"",Code.QUERY_SUCCESS);
+    }
+    @PutMapping
+    public R editUser(@RequestBody FinancialPlan financialPlan){
+        financialPlan.setSaveTime(new Date(System.currentTimeMillis()));
+        financialPlanService.saveOrUpdate(financialPlan);
         return R.sendMessage("","",Code.EDIT_SUCCESS);
     }
 
