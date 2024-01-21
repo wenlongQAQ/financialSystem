@@ -17,9 +17,9 @@
   .erChart{
     width: 500px;
     height: 400px;
-    margin-top: 100px;
-    margin-left: auto;
-    margin-right: auto;
+    float: right;
+    margin-bottom: auto;
+    margin-right: 300px;
   }
   .text {
     font-size: 14px;
@@ -40,7 +40,7 @@
 
   .box-card {
     width: 480px;
-    margin: 0 auto;
+    margin-top: 200px;
   }
 </style>
 <body class="bkImage">
@@ -71,16 +71,17 @@
           </div>
         </el-col>
       </el-row>
+        <el-card class="box-card" >
+            <div slot="header" class="clearfix">
+                <span>收入详情</span>
+            </div>
+            <div v-for="o in orders" :key="o" class="text item">
+                {{'收入名称'+o.orderName +'         '+'金额:'+ o.orderMoney }}
+            </div>
+        </el-card>
       <div id="rose" class="erChart">
       </div>
-      <el-card class="box-card" >
-        <div slot="header" class="clearfix">
-          <span>收入详情</span>
-        </div>
-        <div v-for="o in orders" :key="o" class="text item">
-          {{'收入名称'+o.orderName +'         '+'金额:'+ o.orderMoney }}
-        </div>
-      </el-card>
+
     </div>
   </template>
 </div>
@@ -121,11 +122,23 @@
                   var myChart = echarts.init(document.getElementById('rose'));
                   var _this = this;
                   option = {
+                      tooltip: {
+                          textStyle: {
+                              fontSize: 18
+                          }
+                      },
                     series: [
                       {
                         type: 'pie',
                         data: _this.dataList,
-                        roseType: 'area'
+                        roseType: 'area',
+                          label:{
+                              normal:{
+                                  textStyle:{
+                                      fontSize:40
+                                  }
+                              }
+                          }
                       }
                     ]
                   };
@@ -133,12 +146,23 @@
 
                     if(resp.data.code == 10001){
                       myChart.setOption({
-                        tooltip: {},
+                          tooltip: {
+                              textStyle: {
+                                  fontSize: 18
+                              }
+                          },
                         series: [
                           {
                             type: 'pie',
                             data: resp.data.data,
-                            roseType: 'area'
+                            roseType: 'area',
+                              label:{
+                                normal:{
+                                    textStyle:{
+                                        fontSize:20
+                                    }
+                                }
+                              }
                           }
                         ]
                       });

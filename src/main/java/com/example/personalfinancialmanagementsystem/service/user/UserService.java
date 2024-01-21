@@ -8,7 +8,7 @@ import com.example.personalfinancialmanagementsystem.pojo.user.UserDto;
 
 public interface UserService extends IService<User> {
     void deleteUserAllInformationById(String id);
-    Page<UserDto> getUserPage(Integer page, Integer pageSize, String name);
+    Page<UserDto> getUserPage(Integer page, Integer pageSize, String name) throws RuntimeException;
 
     Integer changePassword(ChangePasswordDto account);
 

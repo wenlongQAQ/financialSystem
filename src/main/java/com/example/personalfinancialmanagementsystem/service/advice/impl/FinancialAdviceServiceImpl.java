@@ -20,6 +20,13 @@ import java.util.List;
 public class FinancialAdviceServiceImpl extends ServiceImpl<FinancialAdviceMapper, FinancialAdvice> implements FinancialAdviceService {
     @Autowired
     private UserService userService;
+
+    /**
+     * 根据用户ID获取理财建议
+     * @param userId
+     * @param type
+     * @return
+     */
     @Override
     public List<FinancialAdvice> getAllAdviceById(String userId, String type) {
         LambdaQueryWrapper<FinancialAdvice> l = new LambdaQueryWrapper<>();
@@ -30,6 +37,13 @@ public class FinancialAdviceServiceImpl extends ServiceImpl<FinancialAdviceMappe
         return advices;
     }
 
+    /**
+     * 获取理财建议分页
+     * @param userId
+     * @param page
+     * @param pageSize
+     * @return
+     */
     @Override
     public Page<FinancialAdvice> getAdvicePage(String userId, Integer page, Integer pageSize) {
         Page<FinancialAdvice> advicePage = new Page<>(page,pageSize);

@@ -40,7 +40,6 @@ public class OrderController {
                      @RequestParam(value = "dates",required = false) List<Long> dates,
                      HttpServletRequest request
     ){
-
         Page<Order> orderPage = new Page<>(page,pageSize); //构造一个Order的页对象
         LambdaQueryWrapper<Order> l = new LambdaQueryWrapper<>(); //构造一个条件包装器
         String userId = (String)request.getSession().getAttribute("userId");
@@ -67,8 +66,8 @@ public class OrderController {
     }
 
     /**
-     * 修改/新增订单
-     * @param order 需要修改的订单信息
+     * 修改/新增收支
+     * @param order 需要修改的收支信息
      * @return 返回操作代码
      */
     @PutMapping
@@ -77,7 +76,7 @@ public class OrderController {
         if (order.getOrderTypeId() == null || order.getOrderTypeId().equals("") ){
             order.setOrderTypeId(order.getType() == 1 ?Code.DEFAULT_ORDER_INCOME_TYPE_ID:Code.DEFAULT_ORDER_EXPEND_TYPE_ID);
         }
-        order.setOrderNum(String.valueOf(new java.util.Date().getTime()));
+        order.setOrderNum(String.valueOf(System.currentTimeMillis()));
         boolean b = orderService.saveOrUpdate(order);
         Integer count = orderService.countDangerOrder();
 
@@ -89,9 +88,9 @@ public class OrderController {
 
 
     /**
-     * 通过id获得订单对象
-     * @param id 订单的Id
-     * @return 返回对应的订单
+     * 通过id获得收支对象
+     * @param id 收支的Id
+     * @return 返回对应的收支
      */
     @GetMapping("/getById")
     public R getOrderById(@RequestParam("id") String id){
@@ -101,8 +100,8 @@ public class OrderController {
     }
 
     /**
-     * 批量删除订单
-     * @param ids 需要删除的订单id
+     * 批量删除收支
+     * @param ids 需要删除的收支id
      * @return 返回操作代码(成功 / 失败)
      */
     @DeleteMapping
@@ -140,7 +139,6 @@ public class OrderController {
         List<HashMap<String, String>> data = orderService.getMoneyAndTypeMap(userId, type,new Date(begin),new Date(end));
         return R.sendMessage(data,"",Code.QUERY_SUCCESS);
     }
-
 
 
 }

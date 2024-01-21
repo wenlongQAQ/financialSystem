@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/common")
+@RequestMapping("/common") // 一级路径
 @Slf4j
 public class CommonController {
     @Value("${filepath}")
@@ -44,6 +44,7 @@ public class CommonController {
             return R.sendMessage(null,"发送失败",Code.SEND_MAIL_ERROR);
         }
     }
+
 
     /**
      * 接收图片
@@ -75,8 +76,9 @@ public class CommonController {
 
     /**
      * 发送图片
-     * @param name
-     * @param response
+     * 通过图片的名称 获取图片资源 再把图片写入到前端页面上
+     * @param name 要下载的图片名称
+     * @param response 返回是一个文件流 写入图片到前端页面中
      */
     @GetMapping("/download")
     public void download(String name, HttpServletResponse response) {

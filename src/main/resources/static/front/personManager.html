@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./assert/common/upload.css">
     <script src="./assert/element-ui/lib/index.js"></script>
     <script src="assert/js/axios.js"></script>
+    <script src="assert/common/age.js"></script>
 </head>
 <style>
     .form1{
@@ -54,7 +55,18 @@
                     </el-col>
                     <el-col :span="8">
                         <el-form-item label="年龄:" prop="age">
-                            <el-input-number v-model="form.userDetail.age" controls-position="right"  :min="1" :max="120"></el-input-number>
+                            <el-input v-model="form.userDetail.age"  :min="1" :max="120" disabled></el-input>
+                        </el-form-item>
+                        <!--    TODO 出生日期  -->
+                        <el-form-item label="出生日期">
+                            <el-date-picker
+                                    v-model="form.userDetail.birth"
+                                    type="date"
+                                    placeholder="选择出生日期"
+                                    :picker-options="pickerOptions"
+                                    @change="getAge">
+
+                            </el-date-picker>
                         </el-form-item>
                     </el-col>
                 </el-row>
@@ -116,17 +128,18 @@
                 }
             };
             var checkNum = (rule, value, callback) => {
-            var numReg=/^[0-9]*$/;
-                    if (!numReg.test(value)) {
-                        callback(new Error('请输入数字值'));
+                var numReg=/^[0-9]*$/;
+                if (!numReg.test(value)) {
+                    callback(new Error('请输入数字值'));
+                } else {
+                    if (value < 18) {
+                        callback(new Error('必须年满18岁'));
                     } else {
-                        if (value < 18) {
-                            callback(new Error('必须年满18岁'));
-                        } else {
-                            callback();
-                        }
+                        callback();
                     }
+                }
             };
+
             var checkEmail = (rule, value, callback) => {
                 // if (value===''){
                 //     callback(new Error('不能为空'))
@@ -148,7 +161,9 @@
                     username:'',
                     phoneNum:'',
                     email:'',
-                    userDetail:{}
+                    userDetail:{
+                        age:''
+                    }
                 },
                 imageUrl:'',
                 rules: {
@@ -161,7 +176,14 @@
                     email: [
                         { validator: checkEmail, trigger: 'blur' }
                     ],
-                }
+                },
+                // TODO
+                pickerOptions: {
+                    disabledDate(time) {
+                        return time.getTime() > Date.now();
+                    },
+                },
+
             }
         },
         methods:{
@@ -178,6 +200,7 @@
                                     _this.$message.success(resp.data.msg||'修改成功');
                                     sessionStorage.setItem('imageName',_this.form.userDetail.imageName);
                                     sessionStorage.setItem('name',_this.form.userDetail.name);
+                                    _this.selectUserDetail();
                                 }
                             })
                         })
@@ -193,6 +216,11 @@
                 var _this = this;
                 axios.get("/uDetail?userId="+sessionStorage.getItem("user")).then(function (resp) {
                     _this.form = resp.data.data;
+                    if(_this.form.userDetail.birth != null && _this.form.userDetail.birth!=""){
+                        _this.form.userDetail.age = _this.getAge(_this.form.userDetail.birth);
+                    }else{
+                        _this.form.userDetail.age = 0;
+                    }
                 })
             },
 
@@ -211,6 +239,9 @@
                     this.$message.error('上传头像图片大小不能超过 2MB!');
                 }
                 return isJPG && isLt2M;
+            },
+            getAge(strBirthday){
+                this.form.userDetail.age = calAge(strBirthday);
             }
         },
         created(){

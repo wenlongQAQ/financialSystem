@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Date;
 import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/plan")
@@ -25,7 +24,7 @@ public class PlanController {
         return R.sendMessage(page1,"select success", Code.QUERY_SUCCESS);
     }
     @DeleteMapping
-    public R deletePlanBatch(@RequestParam  ArrayList<Integer> ids){
+    public R deletePlanBatch(@RequestParam  ArrayList<String> ids){
         financialPlanService.removeByIds(ids);
         return R.sendMessage("","",Code.EDIT_SUCCESS);
     }

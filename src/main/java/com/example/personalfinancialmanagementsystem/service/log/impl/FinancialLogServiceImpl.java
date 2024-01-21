@@ -15,6 +15,15 @@ import org.springframework.stereotype.Service;
 public class FinancialLogServiceImpl extends ServiceImpl<FinancialLogMapper, FinancialLog> implements FinancialLogService {
     @Autowired
     private UserDetailService userDetailService;
+
+    /**
+     * 获取理财日志分页信息
+     * @param id
+     * @param page
+     * @param pageSize
+     * @param searchTitle
+     * @return
+     */
     @Override
     public Page<FinancialLog> getPageSelf(String id, Integer page, Integer pageSize, String searchTitle) {
         Page<FinancialLog> logPage = new Page<>(page,pageSize);

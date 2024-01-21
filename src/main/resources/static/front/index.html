@@ -16,8 +16,8 @@
     <el-container>
         <el-header>
             <span style="font-size: 150%; text-align: left;">个人财务管理系统</span>
-
             <span style="font-size: 150%; text-align: left; float: right;margin-right: 20px">
+<!--                icon -->
                   <i class="el-icon-switch-button" @click="userLoginOut()"></i>
                   {{ name === null   ? '未登录':name }}
               <el-image style="width: auto; height: 40px; border:none;cursor: pointer;"
@@ -28,9 +28,11 @@
                 </el-image>
               </span>
         </el-header>
+<!--        header 与 main 的分界线-->
         <div style="background-color: #409EFF;height: 10px"></div>
 
         <el-container>
+<!--            aside 侧边导航栏 -->
             <el-aside width="10%">
                 <el-menu
                         default-active="2"
@@ -44,6 +46,7 @@
                     <el-menu-item index="1">
                         <template slot="title">
                             <i class="el-icon-location"></i>
+<!--                            -->
                             <span @click="changeIframe('personManager.html')">个人中心</span>
                         </template>
                     </el-menu-item>
@@ -52,7 +55,7 @@
                             <i class="el-icon-menu"></i>
                             <span slot="title">收入管理</span>
                         </template>
-                            <el-menu-item index="2-1" @click="changeIframe('income.html')"  >收入总览</el-menu-item>
+                            <el-menu-item index="2-1" @click="changeIframe('income.html')">收入总览</el-menu-item>
                             <el-menu-item index="2-2" @click="changeIframe('income/addIncome.html')">新增收入</el-menu-item>
                             <el-menu-item index="2-3" @click="changeIframe('income/dayIncome.html')">收入日报</el-menu-item>
                     </el-submenu>
@@ -91,7 +94,6 @@
                         <el-menu-item index="5-3" @click="changeIframe('financial-log/addLog.html')">编写日志</el-menu-item>
                     </el-submenu>
 
-
                     <el-menu-item index="6" @click="changeIframe('financialStatement.html')">
                         <template slot="title">
                             <i class="el-icon-view"></i>
@@ -105,8 +107,9 @@
                             <span slot="title" @click="changeIframe('advice/allAdvice.html')">理财建议</span>
                         </template>
                     </el-menu-item>
-                </el-menu>
 
+                </el-menu>
+<!--                管理员侧边栏 -->
                 <el-menu
                         :unique-opened="false"
                         :collapse-transition="false"
@@ -115,14 +118,25 @@
                         active-text-color="red"
                         v-else
                 >
+<!--                    {
+                            id: '1',
+                            name: '修改密码',
+                        //
+                            url: 'changePassword.html',
+                            icon: 'el-icon-s-tools'
+                        },
+                    -->
                     <div v-for="item in rootMenuList" :key="item.id">
                         <el-menu-item  :index="item.id" @click="menuHandle(item,false)">
+<!--                            图标-->
                             <i class="iconfont" :class="item.icon"></i>
+
                             <span slot="title" style="font-size: 14px">
                                 {{item.name}}
                             </span>
                         </el-menu-item>
                     </div>
+
                 </el-menu>
             </el-aside>
             <el-main v-loading="loading">
@@ -167,11 +181,13 @@
                         icon:'el-icon-s-comment'
                     },
                     {
+                        //
                         id:'4',
                         name:'理财建议管理',
+                        // url 你想跳转到哪里
                         url:'advice/allAdvice.html',
+                        // 图标
                         icon:'el-icon-chat-line-square'
-
                     }
 
                 ],
@@ -180,11 +196,14 @@
         },
         methods:{
             getImage () {
-                return '/common/download?name='+this.imageName;
+                return '/common/download?name='+this.imageName; //访问 common/download ? 参数 : 名字 = 图片名称
             },
+
             userLoginOut(){
+                // 获取当前这个用户的ID
                 var userId = sessionStorage.getItem('user');
                 var _this = this;
+                // 使用axios发送请求   /user/loginOut ? 后面的叫做 查询字符串 我们也可以叫它参数  userId=xxx 请求的方法  是PUT
                 axios.put("/user/loginOut?userId="+userId).then(function (resp) {
                     if (resp.data.code===50001){
                         _this.$message.success(resp.data.msg);
@@ -204,6 +223,7 @@
                 if(item1!=null){
                     this.menuActived = item.id;
                     this.iframeUrl = item.url;
+                    //
                     this.headTitle = item.name;
                     sessionStorage.setItem('history',item.url);
                 }else {
@@ -212,13 +232,13 @@
 
             },
             changeIframe(url){
+                // 鉴权 是否登录了
                 if(sessionStorage.getItem('user')!=null){
-                    this.iframeUrl = url;
-                    sessionStorage.setItem('history',url);
+                    this.iframeUrl = url;// 把当前 页面的url 修改为 参数对应的url
+                    sessionStorage.setItem('history',url); // 设置 session中 你当前访问的页面 你刷新过后 会回到这个页面
                 }else{
-                    this.iframeUrl = "login.html";
+                    this.iframeUrl = "login.html"; // 如果你没登录 就给你显示登录的页面
                 }
-
             },
             handleOpen(key, keyPath) {
                 console.log(key, keyPath);
@@ -229,20 +249,22 @@
         },
         created(){
         },
+        // vue生命周期中 的mounted阶段 的钩子函数
         mounted(){
-            // TODO 根据不同的权限显示不同的菜单
-            if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
-                this.iframeUrl = sessionStorage.getItem('history');
-            }
-
+            // if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
+            //     this.iframeUrl = sessionStorage.getItem('history');
+            // }
+            //this 是指Vue整个Vue组件 iframeUrl - > 相当于vue里面的一个属性
             var _this = this;
-
             if(sessionStorage.getItem("user_identity") == 1){
                 _this.iframeUrl = "changePassword.html";
             }else if(sessionStorage.getItem("user_identity") == 0){
+                // js 里面特有的 未定义类型 sout(undefined);
                 if(sessionStorage.getItem('history') !== undefined && sessionStorage.getItem('user') != null){
+                    // 欢迎页面 在登录里面
                     this.iframeUrl = sessionStorage.getItem('history');
                 }else{
+                    // 这一段代码已经失去效果
                     _this.iframeUrl = "personManager.html";
                 }
             }else{
@@ -250,9 +272,10 @@
             }
 
             setInterval(function () {
-                _this.identity = sessionStorage.getItem("user_identity");
-                _this.name = _this.identity == 1? '管理员' : sessionStorage.getItem('name');
-                _this.imageName =_this.identity == 1 ? 'root' : sessionStorage.getItem('imageName');
+
+                _this.identity = sessionStorage.getItem("user_identity"); // 不断的获取 当前用户的身份 获取是本地进行的 是不消耗服务器资源的
+                _this.name = _this.identity == 1? '管理员' : sessionStorage.getItem('name'); // 用户名 是管理员 直接显示管理员  否则 去session获取
+                _this.imageName =_this.identity == 1 ? 'root' : sessionStorage.getItem('imageName'); //
                 _this.getImage();
             },1000)
             setInterval(function (){

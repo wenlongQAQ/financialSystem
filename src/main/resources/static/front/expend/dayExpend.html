@@ -132,12 +132,23 @@
 
           if(resp.data.code == 10001){
             myChart.setOption({
-              tooltip: {},
+                tooltip: {
+                    textStyle: {
+                        fontSize: 18
+                    }
+                },
               series: [
                 {
                   type: 'pie',
                   data: resp.data.data,
-                  roseType: 'area'
+                  roseType: 'area',
+                    label:{
+                        normal:{
+                            textStyle:{
+                                fontSize:20
+                            }
+                        }
+                    }
                 }
               ]
             });

@@ -7,16 +7,24 @@
     <link rel="stylesheet" href="./assert/element-ui/lib/theme-chalk/index.css">
     <link rel="stylesheet" href="./assert/css/common.css">
     <script src="./assert/element-ui/lib/index.js"></script>
+<!--    ajax 异步请求库 -->
     <script src="assert/js/axios.js"></script>
     <style>
         .form1{
+            /*居中 */
             margin: 10% auto;
+            /*宽度*/
             width: 30% ;
+            /*高度*/
             height: 30%;
+            /*位置 相对位置*/
             position: relative;
+            /*文本对齐  居中对齐*/
             text-align: center;
+            /*行高*/
             line-height: 50px;
         }
+
         .successButton{
             height: 20%;
             margin: 0 auto;
@@ -33,7 +41,9 @@
 <div id="root">
     <div class="form1" style="">
         <div class="title-font" >个人财务管理系统</div>
+<!--        rules 约束的规则 也是一个对象数组 rules的依赖  -->
         <el-form label-width="80px" :model="registerTable" size="medium" :rules="rules"  ref="registerTable"  >
+<!--             prop 约束 -->
             <el-form-item  prop="username">
                 <span slot="label" style="color: #28384f">
                 账号：
@@ -79,17 +89,12 @@
                 </el-col>
             </el-form-item>
 
-
-
-
         </el-form>
         <div class="successButton">
-
+<!--            他接受的方法名 是一个对象的名字 -->
             <el-button type="success"  style="width: 400px" round @click="userRegister('registerTable')">注册</el-button>
             <br/>
             <el-link type="primary" href="login.html" style="float: right" :underline="false">去登录...</el-link>
-
-
         </div>
 
     </div>
@@ -100,6 +105,7 @@
         el: '#root',
         data(){
             var checkUsername = (rule, value, callback) => {
+                // 11位纯数字
                 var reg = /^\d{11}$/;
                 if (value===''){
                     callback(new Error('不能为空'))
@@ -126,14 +132,18 @@
                     callback(new Error('不能为空'));
                     _this.sendMessageButton = true;
                 }
+                // 邮箱的正则表达式
                 var emailRegExp=/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
 
                 if (!emailRegExp.test(value)) {
                     callback(new Error('邮箱格式错误'));
+                    // true 的时候
                     _this.sendMessageButton = true;
                 }else {
                     callback();
+                    // TODO 发送验证码等待时间
                     if(_this.time == 0 ){
+                        // false的时候 是可以点击的
                         _this.sendMessageButton = false;
                     }
 
@@ -158,7 +168,6 @@
                     callback(new Error('手机号格式不正确'));
                 }
                 callback();
-
             };
             return{
                 registerEmail:'',
@@ -198,6 +207,7 @@
                     this.$message.error("前后邮箱不一致!!!!");
                     return;
                 }
+                //  userRegisterTable error
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
                         axios.post('/user/register',this.registerTable).then(function (resp) {
@@ -222,7 +232,6 @@
                         _this.$message.error(resp.data.msg);
                     }
                 })
-
             },
             sendMessageCode(){
                 if(this.registerTable.email ===''){
@@ -230,19 +239,29 @@
                     return;
                 }
                 var _this = this;
+                // registerEmail 相当于一个暂时的存储邮箱数据的
                 this.registerEmail = this.registerTable.email;
+                //time 禁止发送邮件的时间
                 _this.time = 60;
+                // 禁止
                 this.sendMessageButton = true;
+                //获取验证码
                 this.getCode();
+                // 设置一个定时器 循环执行  让禁止的时间 -1
                 const x = setInterval(function () {
                     _this.time--;
+                    //再判断 这一次 -1 之后 是不是归零了
                     if (_this.time === 0){
+                        //如果归零了 我们就设置按钮 是启用的
                         _this.sendMessageButton = false;
+                        //清除这个定时器
                         clearInterval(x);
                     }
+                    //每秒执行一次
                 },1000)
             }
         },
+
         created(){
         },
         mounted(){

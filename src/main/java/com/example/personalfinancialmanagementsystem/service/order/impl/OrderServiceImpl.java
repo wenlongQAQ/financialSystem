@@ -53,11 +53,24 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         }
         return result;
     }
+
+    /**
+     * 获取饼图相关信息,每种收支类型 花费了多少钱
+     * @param userId
+     * @param type
+     * @param begin
+     * @param end
+     * @return
+     */
     @Override
     public List<HashMap<String, String>> getMoneyAndTypeMap(String userId, Integer type, java.sql.Date begin, java.sql.Date end) {
         return orderMapper.getMoneyAndTypeMap(userId, type,begin,end);
     }
 
+    /**
+     * 计算当前消费 如果当日超过1w的有三次 那么需要给出一个警告
+     * @return
+     */
     @Override
     public Integer countDangerOrder() {
         LambdaQueryWrapper<Order> l = new LambdaQueryWrapper<>();
@@ -70,6 +83,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
                 .ge(Order::getOrderMoney,10000);
         return super.count(l);
     }
+
+    /**
+     * 获取警告信息
+     * @param userId
+     * @return
+     */
 
     @Override
     public List<String> getWarningList(String userId) {
@@ -91,6 +110,12 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return warningList;
     }
 
+    /**
+     * 获取收入日报
+     * @param userId
+     * @param type
+     * @return
+     */
     @Override
     public DayOrder getDayIncome(String userId, String type) {
         DayOrder dayIncome = orderMapper.getDayIncome(userId,type);
@@ -100,11 +125,27 @@ public class OrderServiceImpl extends ServiceImpl<OrderMapper, Order> implements
         return dayIncome;
     }
 
+    /**
+     * 根据日期填充饼图信息
+     * @param userId
+     * @param type
+     * @param begin
+     * @param end
+     * @return
+     */
     @Override
     public List<HashMap<String, String>> getMoneyAndTypeMapByDate(String userId, String type, java.sql.Date begin, java.sql.Date end) {
         return orderMapper.getMoneyAndTypeMapByDate(userId, type, begin, end);
     }
 
+    /**
+     * 获取收入日报详情
+     * @param userId
+     * @param type
+     * @param begin
+     * @param end
+     * @return
+     */
     @Override
     public List<Order> getDayOrderDetail(String userId,String type, java.sql.Date begin, java.sql.Date end) {
         return orderMapper.getDayOrderDetail(userId,type, begin, end);

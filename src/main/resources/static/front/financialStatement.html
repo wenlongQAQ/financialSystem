@@ -16,8 +16,8 @@
 </head>
 <style>
     .erChart{
-        width: 500px;
-        height: 400px;
+        width: 1000px;
+        height: 500px;
         margin-top: 100px;
         margin-left: auto;
         margin-right: auto;
@@ -174,17 +174,30 @@
                         }
                     },
                     legend: {
-                        data: ['收入', '支出']
+                        data: ["收入", "支出"],
+                        textStyle: {
+                            "fontSize": 18
+                        }
                     },
-
                     xAxis: [
                         {
                             type: 'category',
                             boundaryGap: false,
-                            data: ['1月', '2月', '3月', '4月', '5月','6月','7月','8月','9月','10月','11月','12月']
+                            data: ['1月', '2月', '3月', '4月', '5月','6月','7月','8月','9月','10月','11月','12月'],
+                            axisLabel:{
+                                textStyle:{
+                                    fontSize:20
+                                }
+                            }
                         }
                     ],
-                    yAxis:{},
+                    yAxis:{
+                        axisLabel:{
+                            textStyle:{
+                                fontSize:20
+                            }
+                        },
+                    },
 
                 };
                 myChart.setOption(option1);
@@ -194,6 +207,11 @@
                     axios.get("/order/moneyList?type="+_this.expend+"&userId="+sessionStorage.getItem('user')+"&begin="+_this.searchMonth[0]+"&end="+_this.searchMonth[1]).then(function (resp) {
                         _this.setExpendIncrease(resp.data.data);
                         myChart.setOption({
+                            tooltip: {
+                                textStyle: {
+                                    fontSize: 18
+                                }
+                            },
                             series: [
                                 {
                                     name: '支出',
@@ -223,22 +241,45 @@
                 var myChart = echarts.init(document.getElementById(position));
                 var _this = this;
                 option = {
+                    tooltip: {
+                        textStyle: {
+                            fontSize: 18
+                        }
+                    },
                     series: [
                         {
                             type: 'pie',
                             data: _this.dataList,
-                            roseType: 'area'
+                            roseType: 'area',
+                            label:{
+                                normal:{
+                                    textStyle:{
+                                        fontSize:40
+                                    }
+                                }
+                            }
                         }
                     ]
                 };
                 axios.get("/order/getMap?userId="+sessionStorage.getItem('user')+'&type='+type+"&begin="+_this.searchMonth[0]+"&end="+_this.searchMonth[1]).then(function (resp) {
                     myChart.setOption({
-                        tooltip: {},
+                        tooltip: {
+                            textStyle: {
+                                fontSize: 18
+                            }
+                        },
                         series: [
                             {
                                 type: 'pie',
                                 data: resp.data.data,
-                                roseType: 'area'
+                                roseType: 'area',
+                                label:{
+                                    normal:{
+                                        textStyle:{
+                                            fontSize:40
+                                        }
+                                    }
+                                }
                             }
                         ]
                     });

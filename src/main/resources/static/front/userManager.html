@@ -10,6 +10,7 @@
     <script src="./assert/element-ui/lib/index.js"></script>
     <script src="assert/js/axios.js"></script>
     <script src="assert/js/echarts.min.js"></script>
+    <script src="assert/common/age.js"></script>
 </head>
 <style>
     .form1{
@@ -71,15 +72,13 @@
                         <el-tag type="success" v-else>
                             {{ scope.row.userDetail.name }}
                         </el-tag>
-
-
                 </template>
             </el-table-column>
             <el-table-column
                     label="性别"
                     width="180">
                 <template slot-scope="scope">
-                    <p>{{ scope.row.userDetail.gender === '0' ? '男' : '女' }}</p>
+                    <p>{{ scope.row.userDetail.gender == '0' ? '男' : '女' }}</p>
                 </template>
             </el-table-column>
             <el-table-column
@@ -110,7 +109,6 @@
                     label="操作"
                     width="250"
                     fixed="right"
-
             >
                 <template slot-scope="scope">
                     <el-button
@@ -160,7 +158,17 @@
             </el-form-item>
 
             <el-form-item label="年龄:" prop="age" :label-width="formLabelWidth">
-                <el-input-number v-model="form.userDetail.age" controls-position="right"  :min="1" :max="120"></el-input-number>
+                <el-input-number v-model="form.userDetail.age" controls-position="right"  :min="1" :max="120" disabled></el-input-number>
+            </el-form-item>
+<!--// TODO 6.10-->
+            <el-form-item label="出生日期" prop="birth">
+                <el-date-picker
+                        v-model="form.userDetail.birth"
+                        type="date"
+                        placeholder="选择出生日期"
+                        :picker-options="pickerOptions"
+                        @change="getAge">
+                </el-date-picker>
             </el-form-item>
 
             <el-form-item label="手机:" prop="phoneNum" :label-width="formLabelWidth">
@@ -477,6 +485,10 @@
             financialAdvice(){
                 window.location.href='advice/addAdvice.html?id='+this.tmpUserId;
             },
+            // TODO 6.10
+            getAge(strBirthday){
+                this.form.userDetail.age = calAge(strBirthday);
+            }
 
 
 

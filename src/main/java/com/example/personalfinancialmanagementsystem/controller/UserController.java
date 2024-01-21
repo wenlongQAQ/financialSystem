@@ -32,20 +32,27 @@ public class UserController {
      */
     @PostMapping("/logon")
     public R userLogon(@RequestBody User account, HttpServletRequest request){
+        // 条件构造器
         LambdaQueryWrapper<User> l = new LambdaQueryWrapper<>();
         l.eq(User::getUsername,account.getUsername())
                 .eq(User::getPassword,account.getPassword())
                 .eq(User::getIdentity,account.getIdentity());
+
         User one = userService.getOne(l);
         if (one != null){
             LambdaQueryWrapper<UserDetail> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+
             lambdaQueryWrapper.eq(UserDetail::getUserId,one.getId());
+
             UserDetail ud =  userDetailService.getOne(lambdaQueryWrapper);
+
             if (ud!=null){
                 one.setUserDetail(ud);
             }
+            //session 相当于会话 相当于两个人聊天 我的名字叫xxx
+            // 客户端访问服务器 相当于 一个会话(session) K userId V one.getId()
+            //登录成功之后 我们会在session中设置登录的用户的userId
             request.getSession().setAttribute("userId",one.getId());
-            log.info((String) request.getSession().getAttribute("userId"));
             return R.sendMessage(one,"登录成功",Code.LOGIN_SUCCESS);
         }else {
             return R.sendMessage("","账号或密码错误",Code.LOGIN_ERROR);
@@ -60,22 +67,27 @@ public class UserController {
     @PostMapping("/register")
     @Transactional
     public R userRegister(@RequestBody UserRegister user){
+        // 首先 根据用户的账号 获取验证码  HashMap  get
         String s = RandomCode.codeMap.get(user.getUsername());
-        if(s != null &&RandomCode.codeMap.get(user.getUsername()).equals(user.getCode())){
+        // 验证码 不为null  说明他之前请求过验证码 而且验证码没有过期  我们再得到验证码 与 前端提交过来的数据中的验证码进行比较
+        if( s != null && s.equals(user.getCode())){
             User user1 = new User();
             user1.setUsername(user.getUsername());
             user1.setEmail(user.getEmail());
             user1.setPhoneNum(user.getPhoneNum());
             user1.setPassword(user.getPassword());
-            UserDetail ud = new UserDetail();
+            //账号 密码 邮箱 手机号 封装进User对象 里面
             userService.save(user1);
-            LambdaQueryWrapper<User> l = new LambdaQueryWrapper<>();
-            l.eq(User::getUsername,user.getUsername());
-            User one = userService.getOne(l);
-
-            ud.setUserId(one.getId());
-            ud.setName(user.getUsername());
+            // 保存了以后,我们使用的mybatis-plus  user1自动填充里面的id字段
+            // 创建一个用户详情信息
+            UserDetail ud = new UserDetail();
+            // 我们把用户详情信息绑定到用户上
+            ud.setUserId(user1.getId());
+            // 让他默认的名称 是他的账号
+            ud.setName(user1.getUsername());
+            //  userDetailService 保存
             userDetailService.save(ud);
+
             RandomCode.codeMap.remove(user.getUsername(),user.getCode());
             return R.sendMessage("","注册成功",Code.REGISTER_SUCCESS);
         }else {
@@ -94,7 +106,7 @@ public class UserController {
         LambdaQueryWrapper<User> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(User::getUsername,user.getUsername());
         User one = userService.getOne(lambdaQueryWrapper);
-        // TODO 修改 if-else结构
+
         if (one != null){
             if (user.getEmail().equals(one.getEmail())){
                 if(user.getCode().equals(RandomCode.codeMap.get(user.getUsername()))){
@@ -106,6 +118,13 @@ public class UserController {
         }else return R.sendMessage("","账号不存在",Code.REGISTER_ERROR);
         return R.sendMessage("","修改成功",Code.REGISTER_SUCCESS);
     }
+
+    /**
+     * 检验用户名与邮箱是否匹配
+     * @param email
+     * @param username
+     * @return
+     */
 
     @GetMapping("/email")
     public R getUserEmail(@RequestParam("email") String email,@RequestParam("username") String username){
@@ -120,25 +139,36 @@ public class UserController {
     }
     /**
      * 用户登出
-     * @param userId
+     * @param userId 要退出的这个用户的 ID
      * @param request
      * @return 返回登出信息
+     * @RequestParam 代表 这个参数是一个路径参数 包含在URL里面 通常是?后面的部分 userId
      */
     @PutMapping("/loginOut")
     public R loginOut(@RequestParam("userId") String userId,HttpServletRequest request){
+        // 获取请求的session 中的字段 userId
         String user = (String) request.getSession().getAttribute("userId");
+        // 前端传过来的参数 不为null
         if (userId!=null && userId.equals(user)){
+            // 如果一样 我们就把session中的userId属性移除了
             request.getSession().removeAttribute("userId");
+
             return R.sendMessage("","退出登录成功",Code.EDIT_SUCCESS);
+
         }else {
             return R.sendMessage("","请检查你的登录状态",Code.EDIT_ERROR);
         }
     }
 
+    /**
+     * 用户修改密码
+     * @param request
+     * @param account
+     * @return
+     */
     @PutMapping("/editPassword")
     public R changePassword(HttpServletRequest request, @RequestBody ChangePasswordDto account){
         String userId = (String) request.getSession().getAttribute("userId");
-
         if (userId == null)
             return R.sendMessage("","请检查你的登录状态",Code.USER_LOGIN_OUT);
         account.setUserId(userId);
@@ -148,16 +178,30 @@ public class UserController {
             case Code.EDIT_SUCCESS: return R.sendMessage("","修改成功",Code.EDIT_SUCCESS);
         }
         return R.sendMessage("","未知异常",Code.UNKNOWN_EXCEPTION);
-
     }
+
+    /**
+     * 管理员分页查询用户
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
 
     @GetMapping("/page")
     public R getUserPage(@RequestParam("page") Integer page, @RequestParam("pageSize") Integer pageSize, @RequestParam(value = "name",required = false) String name){
         Page<UserDto> userPage = userService.getUserPage(page, pageSize, name);
         return R.sendMessage(userPage,"",Code.QUERY_SUCCESS);
     }
-    @DeleteMapping
 
+    /**
+     * 根据ID删除用户
+     * @param userId
+     * @param request
+     * @return
+     */
+
+    @DeleteMapping
     public R deleteUserById(@RequestParam("userId") String userId,HttpServletRequest request){
         String rootId = (String) request.getSession().getAttribute("userId");
         if(rootId == null){

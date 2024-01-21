@@ -1,7 +1,10 @@
 package com.example.personalfinancialmanagementsystem.pojo.advice;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 /**
  * @author wenlongQAQ
@@ -15,5 +18,7 @@ public class FinancialAdvice {
     private String userId;
     @TableField(exist = false)
     private String userName;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDate saveTime;
 
 }

@@ -33,9 +33,13 @@ public class OrderTypeController {
         String userId = (String) request.getSession().getAttribute("userId");
         LambdaQueryWrapper<OrderType> l = new LambdaQueryWrapper<>();
         l.eq(OrderType::getUserId,userId)
-                .eq(OrderType::getType,type)
-        ;
+                .eq(OrderType::getType,type);
         List<OrderType> list = orderTypeService.list(l);
+        OrderType orderType = new OrderType();
+        orderType.setType(type);
+        orderType.setId(type == 1? Code.DEFAULT_ORDER_INCOME_TYPE_ID : Code.DEFAULT_ORDER_EXPEND_TYPE_ID);
+        orderType.setName(type == 1 ? "默认收入" : "默认支出");
+        list.add(orderType);
         return R.sendMessage(list,"", Code.QUERY_SUCCESS);
     }
 
@@ -85,7 +89,8 @@ public class OrderTypeController {
     public R addOrderType(@RequestParam("userId") String userId,@RequestBody OrderType orderType,HttpServletRequest request){
         if (userId!=null && userId.equals(request.getSession().getAttribute("userId"))){
             LambdaQueryWrapper<OrderType> l = new LambdaQueryWrapper<>();
-            l.eq(OrderType::getUserId,userId).eq(OrderType::getName,orderType.getName());
+            l.eq(OrderType::getUserId,userId)
+                    .eq(OrderType::getName,orderType.getName());
             if (orderTypeService.getOne(l) != null) {
                 return R.sendMessage("","类型名称:" + orderType.getName() +  "已存在",Code.EDIT_ERROR);
             }

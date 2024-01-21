@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
+import java.util.Calendar;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private OrderService orderService;
     @Autowired
     private OrderTypeService orderTypeService;
+
+    /**
+     * 删除用户 并且一并删除用户详情信息
+     * @param userId
+     */
     @Override
     @Transactional
     public void deleteUserAllInformationById(String userId) {
@@ -52,8 +59,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         orderService.remove(lo);
     }
 
+    /**
+     * 分页查询用户
+     * @param page
+     * @param pageSize
+     * @param name
+     * @return
+     */
+
     @Override
-    public Page<UserDto> getUserPage(Integer page, Integer pageSize, String name) {
+    public Page<UserDto> getUserPage(Integer page, Integer pageSize, String name)  {
         Page<User> userPage = new Page<>(page,pageSize);
         LambdaQueryWrapper<User> l = new LambdaQueryWrapper<>();
         LambdaQueryWrapper<UserDetail> lUD = new LambdaQueryWrapper<>();
@@ -71,7 +86,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String userId = item.getId();
             lUD.eq(UserDetail::getUserId,userId);
             UserDetail udById = userDetailService.getOne(lUD);
-            item.setUserDetail(udById);
+//            TODO
+            try {
+                int age = getAge(udById.getBirth());
+                if (udById.getAge() != age ){
+                    udById.setAge(age);
+                    userDetailService.updateById(udById);
+                }
+                item.setUserDetail(udById);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
             lUD.clear();
             UserDto userDto = new UserDto();
             BeanUtils.copyProperties(item,userDto,"warning");
@@ -86,6 +111,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return res;
     }
 
+    /**
+     * 修改密码
+     * @param account
+     * @return
+     */
     @Override
     public Integer changePassword(ChangePasswordDto account) {
         LambdaQueryWrapper<User> l = new LambdaQueryWrapper<>();
@@ -98,5 +128,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         one.setPassword(account.getNewPassword());
         this.updateById(one);
         return Code.EDIT_SUCCESS ;
+    }
+// TODO
+    public static int getAge(Date birthDay) throws Exception {
+
+        Calendar cal = Calendar.getInstance();
+
+        if (cal.before(birthDay)) { //出生日期晚于当前时间，无法计算
+
+            throw new IllegalArgumentException(
+
+                    "The birthDay is before Now.It's unbelievable!");
+
+        }
+
+        int yearNow = cal.get(Calendar.YEAR); //当前年份
+
+        int monthNow = cal.get(Calendar.MONTH); //当前月份
+
+        int dayOfMonthNow = cal.get(Calendar.DAY_OF_MONTH); //当前日期
+
+        cal.setTime(birthDay);
+
+        int yearBirth = cal.get(Calendar.YEAR);
+
+        int monthBirth = cal.get(Calendar.MONTH);
+
+        int dayOfMonthBirth = cal.get(Calendar.DAY_OF_MONTH);
+
+        int age = yearNow - yearBirth; //计算整岁数
+
+        if (monthNow <= monthBirth) {
+
+            if (monthNow == monthBirth) {
+
+                if (dayOfMonthNow < dayOfMonthBirth) age--;//当前日期在生日之前，年龄减一
+
+            }else{
+
+                age--;//当前月份在生日之前，年龄减一
+
+            }
+        } return age;
     }
 }
