@@ -134,12 +134,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         Calendar cal = Calendar.getInstance();
 
+        if (cal == null)
+            throw new IllegalStateException("UNKNOWN ERROR");
         if (cal.before(birthDay)) { //出生日期晚于当前时间，无法计算
-
             throw new IllegalArgumentException(
-
-                    "The birthDay is before Now.It's unbelievable!");
-
+                    "The birthDay is before Now");
         }
 
         int yearNow = cal.get(Calendar.YEAR); //当前年份

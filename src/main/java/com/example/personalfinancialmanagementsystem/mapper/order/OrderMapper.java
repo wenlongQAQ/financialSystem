@@ -46,7 +46,7 @@ public interface OrderMapper extends BaseMapper<Order> {
      * @param type
      * @return
      */
-    @Select("select count(1) count,sum(order_money) amount from orderdetail where user_id = #{userId} day(order_time) = day(now()) and year(order_time) = year(now()) and month(order_time) = month(now()) and type=#{type};")
+    @Select("select count(1) count,sum(order_money) amount from orderdetail where user_id = #{userId} and day(order_time) = day(now()) and year(order_time) = year(now()) and month(order_time) = month(now()) and type=#{type};")
     public DayOrder getDayIncome(String userId,String type);
 
     /**
